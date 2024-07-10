@@ -1,4 +1,5 @@
 ﻿using ECraft.Models;
+using Microsoft.AspNetCore.Identity;
 using System.ComponentModel.DataAnnotations;
 
 namespace ECraft.Contracts.LocationDto
@@ -15,10 +16,10 @@ namespace ECraft.Contracts.LocationDto
 
 		public int? StateId { get; set; }
 
-		public LocationCity GetDomainEntity(out bool successfulMapping, out string validationErrorMessage, LocationCity? oldInstance=null)
+		public LocationCity GetDomainEntity(out bool successfulMapping, out IdentityError? validationError, LocationCity? oldInstance=null)
 		{
 			successfulMapping = true;
-			validationErrorMessage = string.Empty;
+			validationError = null;
 
 			if (oldInstance is null)
 			{

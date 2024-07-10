@@ -1,10 +1,13 @@
-﻿namespace ECraft.Domain
+﻿using ECraft.Contracts.Response;
+using Microsoft.AspNetCore.Identity;
+
+namespace ECraft.Domain
 {
 	public class AuthResult
 	{
-        public bool Succeeded { get; set; }
+        public bool Succeeded { get; set; }=false;
 
-        public IEnumerable<string>? Errors { get; set; }
+        public ErrorList? Errors { get; set; }
 
 		public IEnumerable<string>? Roles { get; set; }
 

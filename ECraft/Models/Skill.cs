@@ -7,9 +7,17 @@ namespace ECraft.Models
         [MaxLength(100)]
         public string Name { get; set; }
 
-        public int CategoryId { get; set; }
+        public int CraftId { get; set; }
 
-        public Craft Category { get; set; }
+        public Craft Craft { get; set; }
+
+        public DateTime CreationDate { get; set; }
+
+        public int CreatorId { get; set; }
+
+        public AppUser Creator { get; set; }
+
+        public bool Approved { get; set; }    
 
         [MaxLength(50)]
         public string? Icon { get; set; }

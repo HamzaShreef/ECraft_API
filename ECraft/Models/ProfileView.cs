@@ -8,9 +8,11 @@
 
         public AppUser Viewer { get; set; }
 
-        public Crafter Profile { get; set; }
+        public CrafterProfile Profile { get; set; }
 
         public DateTime ViewDate { get; set; }
+
+       // public int ViewCount { get; set; } 
 
     }
 }

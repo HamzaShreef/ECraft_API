@@ -1,14 +1,17 @@
-﻿using ECraft.Contracts.LocationDto;
+﻿using ECraft.Constants;
+using ECraft.Contracts.LocationDto;
 using ECraft.Data;
+using ECraft.Extensions;
 using ECraft.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace ECraft.Controllers
 {
-	[Route("api/[controller]")]
+    [Route("api/[controller]")]
 	[ApiController]
 	public class LocationController : ControllerBase
 	{
@@ -22,7 +25,7 @@ namespace ECraft.Controllers
 		[HttpGet("country/{countryId}")]
 		public async Task<IActionResult> GetCountry(int countryId)
 		{
-			LocationCountry countryWithCities = await _db.Countries.Where(c => c.Id == countryId)
+			LocationCountry countryWithCities = await _db.LCountries.Where(c => c.Id == countryId)
 				.Include(c => c.CountryCities)
 				.Include(c => c.CountryStates)
 				.FirstOrDefaultAsync();
@@ -45,7 +48,7 @@ namespace ECraft.Controllers
 		[HttpGet("state/{stateId}")]
 		public async Task<IActionResult> GetState(int stateId)
 		{
-			LocationState stateWithCities = await _db.LocationStates.Where(s => s.Id == stateId)
+			LocationState stateWithCities = await _db.LStates.Where(s => s.Id == stateId)
 				.Include(s => s.StateCities)
 				.FirstOrDefaultAsync();
 
@@ -65,7 +68,7 @@ namespace ECraft.Controllers
 		[HttpGet("country")]
 		public async Task<IActionResult> GetAllCountries()
 		{
-			var countries = await _db.Countries.Select<LocationCountry, CountryDto>(c => new CountryDto
+			var countries = await _db.LCountries.Select<LocationCountry, CountryDto>(c => new CountryDto
 			{
 				CountryName = c.CountryName,
 				CountryCode = c.CountryCode,
@@ -85,9 +88,9 @@ namespace ECraft.Controllers
 		{
 			if (ModelState.IsValid)
 			{
-				LocationCountry newCountryRecord = countryDto.GetDomainEntity(out bool successfulMapping, out string msg);
+				LocationCountry newCountryRecord = countryDto.GetDomainEntity(out bool successfulMapping, out IdentityError? validationError);
 
-				_db.Countries.Add(newCountryRecord);
+				_db.LCountries.Add(newCountryRecord);
 
 				try
 				{
@@ -121,16 +124,16 @@ namespace ECraft.Controllers
 			{
 				int countryId = stateDto.CountryId;
 
-				bool validCountryId = await _db.Countries.AnyAsync(c => c.Id == countryId);
+				bool validCountryId = await _db.LCountries.AnyAsync(c => c.Id == countryId);
 
 				if (!validCountryId)
 					return NotFound("CountryId does not match a stored record");
 
 				
 
-				LocationState newStateRecord = stateDto.GetDomainEntity(out bool successfulMapping, out string msg);
+				LocationState newStateRecord = stateDto.GetDomainEntity(out bool successfulMapping, out IdentityError? validationError);
 
-				_db.LocationStates.Add(newStateRecord);
+				_db.LStates.Add(newStateRecord);
 
 				try
 				{
@@ -138,7 +141,15 @@ namespace ECraft.Controllers
 				}
 				catch (Exception ex)
 				{
-					return StatusCode(StatusCodes.Status500InternalServerError, "Service is down");
+					IdentityError error = new IdentityError()
+					{
+						Code = GeneralErrorCodes.ServiceDown,
+						Description = ex.Message
+
+					};
+					
+					var errors = new List<IdentityError>() { error };
+					return StatusCode(StatusCodes.Status500InternalServerError, errors);
 				}
 
 				stateDto.StateId = newStateRecord.Id;
@@ -172,14 +183,14 @@ namespace ECraft.Controllers
 				int? stateId = cityDto.StateId;
 
 
-				bool validCountryId = await _db.Countries.AnyAsync(c => c.Id == countryId);
+				bool validCountryId = await _db.LCountries.AnyAsync(c => c.Id == countryId);
 
 				if (!validCountryId)
 					return NotFound("CountryId does not match a stored record");
 
 				if (stateId.HasValue)
 				{
-					bool validStateId = await _db.LocationStates.AnyAsync(s => s.Id == stateId);
+					bool validStateId = await _db.LStates.AnyAsync(s => s.Id == stateId);
 
 
 					if (!validStateId)
@@ -187,9 +198,9 @@ namespace ECraft.Controllers
 				}
 
 
-				LocationCity newCityRecord = cityDto.GetDomainEntity(out bool successfulMapping, out string msg);
+				LocationCity newCityRecord = cityDto.GetDomainEntity(out bool successfulMapping, out IdentityError? validationError);
 
-				_db.Cities.Add(newCityRecord);
+				_db.LCities.Add(newCityRecord);
 
 				try
 				{

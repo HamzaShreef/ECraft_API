@@ -1,4 +1,5 @@
 ﻿using ECraft.Contracts.Request;
+using ECraft.Models.Identity;
 using Microsoft.AspNetCore.Identity;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -13,6 +14,11 @@ namespace ECraft.Models
             LastName = lastName;
         }
 
+        public AppUser()
+        {
+            
+        }
+
         [MaxLength(20)]
         public string FirstName { get; set; }
 
@@ -21,9 +27,15 @@ namespace ECraft.Models
 
         public DateOnly? Dob { get; private set; }
 
-        public bool isMaleGender { get; set; } = true;
+        public bool MGender { get; set; } = true;
 
 		public DateTime CreationDate { get; set; } = DateTime.UtcNow;
+
+        public DateTime LastLogin { get; set; }
+
+        public DateTime LastOnline { get; set; }
+
+		public bool IsCrafter { get; set; } = false;
 
         [MaxLength(100)]
         public string? ProfileImg { get; set; }
@@ -53,7 +65,11 @@ namespace ECraft.Models
 			}
 		}
 
-		public bool SetDob(DateOnly dob)
+        public int? CrafterProfileId { get; set; }
+
+        public CrafterProfile? CrafterProfile { get; set; }
+
+        public bool SetDob(DateOnly dob)
         {
 			Dob = dob;
 			var age = this.Age;
@@ -65,5 +81,8 @@ namespace ECraft.Models
 
             return false;
         }
+
+       // public ICollection<RefreshToken> RefreshTokens { get; set; }
+
     }
 }

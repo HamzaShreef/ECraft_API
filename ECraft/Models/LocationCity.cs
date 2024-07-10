@@ -4,8 +4,11 @@ namespace ECraft.Models
 {
     public class LocationCity : BaseEntity<int>
     {
-        [MaxLength(250)]
+        [MaxLength(100)]
         public string CityName { get; set; }
+
+        [MaxLength(100)]
+        public string? LocalName { get; set; }
 
         public int? StateId { get; set; }
 

@@ -10,15 +10,17 @@ namespace ECraft.Data
 	{
         public DbSet<Craft> Crafts { get; set; }
 
-        public DbSet<Crafter> Crafters { get; set; }
+        public DbSet<CrafterProfile> Crafters { get; set; }
 
         public DbSet<CraftProject> CraftProjects { get; set; }
 
-        public DbSet<LocationCountry> Countries { get; set; }
+        public DbSet<LocationCountry> LCountries { get; set; }
 
-        public DbSet<LocationState> LocationStates { get; set; }
+        public DbSet<LocationState> LStates { get; set; }
 
-        public DbSet<LocationCity> Cities { get; set; }
+        public DbSet<LocationCity> LCities { get; set; }
+
+        public DbSet<RefreshToken> RefreshTokens { get; set; }
 
         public AppDbContext(DbContextOptions options):base(options)
         {

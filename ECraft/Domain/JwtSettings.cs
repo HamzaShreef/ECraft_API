@@ -10,6 +10,8 @@
 
         public bool ValidateLifeTime { get; set; }
 
+        public bool RefreshInAccessPeriod { get; set; }
+
         public TimeSpan TokenLifeTime { get; set; }
 
         public TimeSpan RefreshPeriod { get; set; }

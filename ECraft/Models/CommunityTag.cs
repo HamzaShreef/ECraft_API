@@ -9,6 +9,8 @@ namespace ECraft.Models
 
         public int PublicationsCount { get; set; }
 
+        public DateTime CreationDate { get; set; }
+
         public ICollection<ProjectTag>? CraftProjects { get; set; }
 
     }

@@ -14,9 +14,8 @@ namespace ECraft.Data.Configurations
 			builder.HasIndex(pv => pv.ProfileId).IsUnique(false);
 
 			builder.HasOne(pv => pv.Profile).WithMany(profile => profile.ProfileViews).HasForeignKey(pv=>pv.ProfileId);
-			builder.HasOne(pv=>pv.Viewer).WithMany().HasForeignKey(pv => pv.ViewerId);
 
-			throw new NotImplementedException();
+			builder.HasOne(pv => pv.Viewer).WithMany().HasForeignKey(pv => pv.ViewerId).IsRequired(false);
 		}
 	}
 }

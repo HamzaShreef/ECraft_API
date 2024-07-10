@@ -9,10 +9,11 @@ namespace ECraft.Data.Configurations.Identity
     {
         public void Configure(EntityTypeBuilder<AppUser> builder)
         {
-            builder.UseTptMappingStrategy();
+            //builder.UseTptMappingStrategy();
 
             builder.HasIndex(u => u.NormalizedUserName).IsUnique().HasDatabaseName("IX_UserName");
             builder.HasIndex(u => u.NormalizedEmail).IsUnique().HasDatabaseName("IX_Email");
+
 
             builder.Property(u => u.ConcurrencyStamp).IsConcurrencyToken();
 
@@ -29,6 +30,8 @@ namespace ECraft.Data.Configurations.Identity
             builder.Property(u => u.SecurityStamp).HasMaxLength(128);
             builder.Property(u => u.ConcurrencyStamp).HasMaxLength(50);
             builder.Property(u => u.PasswordHash).HasMaxLength(256);
+
+            builder.HasOne(u => u.CrafterProfile).WithOne(c => c.UserRecord).HasForeignKey<AppUser>(u => u.CrafterProfileId).IsRequired(false);
 
             builder.ToTable(nameof(AppUser));
 

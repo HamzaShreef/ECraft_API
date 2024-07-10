@@ -7,6 +7,9 @@ namespace ECraft.Models
         [MaxLength(100)]
         public string CountryName { get; set; }
 
+        [MaxLength(100)]
+        public string? LocalName { get; set; }
+
         [MaxLength(10)]
         public string CountryCode { get; set; }
 

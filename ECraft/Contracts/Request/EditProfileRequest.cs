@@ -1,4 +1,6 @@
-﻿using ECraft.Models;
+﻿using ECraft.Constants;
+using ECraft.Models;
+using Microsoft.AspNetCore.Identity;
 using System.ComponentModel.DataAnnotations;
 using System.Security.Cryptography.Xml;
 
@@ -21,11 +23,10 @@ namespace ECraft.Contracts.Request
 		public string? UserName { get; set; }
 
 
-
-		public AppUser GetDomainEntity(out bool successfulMapping, out string validationErrorMessage, AppUser? oldInstance)
+		public AppUser GetDomainEntity(out bool successfulMapping, out IdentityError validationError, AppUser? oldInstance)
 		{
 			successfulMapping = true;
-			validationErrorMessage = string.Empty;
+			validationError = null;
 
 			if (oldInstance != null)
 			{
@@ -34,11 +35,15 @@ namespace ECraft.Contracts.Request
 				oldInstance.UserName = this.UserName;
 				oldInstance.NormalizedUserName = this.UserName?.ToUpper();
 
-				validationErrorMessage = string.Empty;
 
 				if (this.Dob != null && !oldInstance.SetDob(this.Dob.Value))
 				{
-					validationErrorMessage = "Age doesn't meet the minimum requirements";
+					validationError = new IdentityError()
+					{
+						Code = AuthConstants.Errors.DobError,
+						Description = "Age doesn't meet the minimum requirements"
+					};				
+
 					successfulMapping = false;
 				}
 

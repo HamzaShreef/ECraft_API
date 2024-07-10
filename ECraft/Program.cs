@@ -11,7 +11,8 @@ using System.Diagnostics;
 using ECraft.Services;
 using Microsoft.OpenApi.Models;
 using Microsoft.Extensions.Options;
-using ECraft;
+using ECraft.Extensions;
+using System.Security.Cryptography;
 
 
 
@@ -28,7 +29,7 @@ builder.Services.AddDbContextPool<AppDbContext>(options =>
 });
 
 
-#region Identity Configuraion
+#region Auth Configuraion
 
 builder.Services.AddIdentity<AppUser, AppRole>(options =>
 {
@@ -67,6 +68,8 @@ builder.Services.AddSingleton(jwtSettings);
     {
         jwtOptions.TokenValidationParameters = tokenValidationParameters;
     });
+
+builder.Services.AddDataProtection();
 
 #endregion
 

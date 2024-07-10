@@ -14,6 +14,7 @@ namespace ECraft.Controllers
 		[Authorize]
 		public async Task<IActionResult> AddProject([FromBody] CrafterProfileRequest crafterInfo)
 		{
+
 			return Ok("Under Construction");
 		}
 

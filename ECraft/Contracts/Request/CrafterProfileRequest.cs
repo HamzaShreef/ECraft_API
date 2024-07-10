@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using ECraft.Constants;
+using System.ComponentModel.DataAnnotations;
 
 namespace ECraft.Contracts.Request
 {
@@ -6,8 +7,8 @@ namespace ECraft.Contracts.Request
 	{
         public int CraftId { get; set; }
 
-        [MaxLength(20)]
         [MinLength(10)]
+        [MaxLength(12)]
         [DataType(DataType.PhoneNumber)]
         public string ContactPhone { get; set; }
 
@@ -15,7 +16,16 @@ namespace ECraft.Contracts.Request
         public int CityId { get; set; }
 
         [MinLength(20)]
-        [MaxLength(500)]
+        [MaxLength(StringPropertyLengths.AboutCrafterMax)]
         public string About { get; set; }
-    }
+
+        [MinLength(3)]
+        [MaxLength(StringPropertyLengths.CrafterTitleMax)]
+        public string Title { get; set; }
+
+		[MinLength(3)]
+		[MaxLength(250)]
+		public string WorkLocation { get; set; }
+
+	}
 }

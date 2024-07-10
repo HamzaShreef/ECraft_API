@@ -12,9 +12,11 @@ namespace ECraft.Models
 
 		public DateTime CreationDate { get; private set; } = DateTime.UtcNow;
 
-		[MaxLength(50)]
+		public int CraftersCount { get; set; }
+
+        [MaxLength(100)]
 		public string? Icon { get; set; }
 
-		public ICollection<Crafter>? CraftProfessionals { get; set; }
+		public ICollection<CrafterProfile>? CraftProfessionals { get; set; }
 	}
 }

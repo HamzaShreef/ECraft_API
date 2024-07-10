@@ -1,4 +1,4 @@
-# Ecrafts Solution
+# E-Crafts Web Solution for Crafters and Unique Craft Solutions for Enthusiasts and Seekers
 
 ## Overview
 **ECrafts** is a platform designed for professional crafters to showcase their skills, share their previous work, and expand their customer base. The platform provides a space for crafters to connect with potential clients and other crafters, fostering a community of creativity and craftsmanship.

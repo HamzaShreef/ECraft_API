@@ -13,10 +13,8 @@
 
 ## Technologies Used
 - **Back-end:** ASP.NET Core, C#
-- **Front-end:** JavaScript, Bootstrap
 - **Database:** SQL Server
-- **ORM:** Dapper
-- **Other:** .NET Web Forms, Python, OpenCV, PyQt
+- **ORM:** EFCore
 
 ## Installation
 1. Clone the repository: 

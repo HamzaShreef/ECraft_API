@@ -50,7 +50,7 @@ namespace ECraft.Models
 
 		// New fields
 		[MaxLength(1000)]
-		public string MaterialsUsed { get; set; }
+		public string? MaterialsUsed { get; set; }
 
 		[MaxLength(50)]
 		public string Status { get; set; } // E.g., Ongoing, Completed, On Hold

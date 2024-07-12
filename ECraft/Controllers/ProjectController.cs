@@ -12,7 +12,7 @@ namespace ECraft.Controllers
 	{
 		[HttpPost("project")]
 		[Authorize]
-		public async Task<IActionResult> AddProject([FromBody] CrafterProfileRequest crafterInfo)
+		public async Task<IActionResult> AddProject([FromBody] CrafterProfileBasicInfo crafterInfo)
 		{
 
 			return Ok("Under Construction");
@@ -20,7 +20,7 @@ namespace ECraft.Controllers
 
 		[HttpPatch("project")]
 		[Authorize]
-		public async Task<IActionResult> EditProject([FromBody] CrafterProfileRequest crafterInfo)
+		public async Task<IActionResult> EditProject([FromBody] CrafterProfileBasicInfo crafterInfo)
 		{
 			return Ok("Under Construction");
 		}

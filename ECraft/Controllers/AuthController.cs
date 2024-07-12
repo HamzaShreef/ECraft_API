@@ -2,6 +2,7 @@
 using ECraft.Contracts.Request;
 using ECraft.Contracts.Response;
 using ECraft.Data;
+using ECraft.Domain;
 using ECraft.Extensions;
 using ECraft.Models;
 using ECraft.Services;
@@ -128,23 +129,22 @@ namespace ECraft.Controllers
 			if (!ModelState.IsValid)
 				return BadRequest(ModelState.GetErrorList());
 
-			List<IdentityError> errors = new List<IdentityError>();
+			ErrorList errors = new ErrorList();
 
 			//UserName validation
 			if (persitedInfo.UserName != profile.UserName)
 			{
 				if (string.IsNullOrEmpty(persitedInfo.UserName))
 				{
-					var error = new IdentityError() { Code = AuthConstants.Errors.NullUserNameError, Description = "Username cannot be left empty." };
-					errors.Add(error);
+					errors.AddError(AuthConstants.Errors.NullUserNameError, "Username cannot be left empty.");
 					return BadRequest(errors);
 				}
 				bool reservedUserName = await _db.Users.AnyAsync(u => u.NormalizedUserName == persitedInfo.UserName.ToUpper());
 
 				if (reservedUserName)
 				{
-					var error = new IdentityError() { Code = AuthConstants.Errors.UsernameUsedError, Description = "Use a different UserName" };
-					errors.Add(error);
+					errors.AddError(AuthConstants.Errors.UsernameUsedError, "Use a different UserName");
+
 					return BadRequest(errors);
 				}
 			}
@@ -157,7 +157,7 @@ namespace ECraft.Controllers
 
 			if (!localBusinessValidation)
 			{
-				errors.Add(validationError);
+				errors.AddError(validationError.Code, validationError.Description);
 				return BadRequest(errors);
 			}
 
@@ -215,7 +215,8 @@ namespace ECraft.Controllers
 						Roles = authResult.Roles != null ? authResult.Roles.ToList() : new List<string>(),
 						ImgUrl = authResult.ImgUrl,
 						RefreshToken = authResult.RefreshToken,
-						ExpiryDate = authResult.ExpriryDate
+						ExpiryDate = authResult.ExpriryDate,
+						IsCrafter = authResult.IsCrafter,
 					};
 
 					return Ok(responseDto);

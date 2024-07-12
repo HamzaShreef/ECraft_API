@@ -20,5 +20,7 @@ namespace ECraft.Domain
 		public string RefreshToken { get; set; }
 
         public DateTime ExpriryDate { get; set; }
+
+        public bool IsCrafter { get; set; }
     }
 }

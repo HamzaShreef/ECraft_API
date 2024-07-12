@@ -10,9 +10,12 @@ namespace ECraft.Models
         [MaxLength(100)]
         public string? LocalName { get; set; }
 
-        public int? StateId { get; set; }
+        public int? RegionId { get; set; }
 
-        public LocationState? State { get; set; }
+		[MaxLength(50)]
+		public string? TimeZone { get; set; }  // e.g., "America/New_York"
+
+		public LocationRegion? State { get; set; }
 
         public int CountryId { get; set; }
 

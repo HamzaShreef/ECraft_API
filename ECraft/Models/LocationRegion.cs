@@ -2,18 +2,18 @@
 
 namespace ECraft.Models
 {
-    public class LocationState : BaseEntity<int>
+    public class LocationRegion : BaseEntity<int>
     {
         [MaxLength(100)]
-        public string? StateName { get; set; }
+        public string RegionName { get; set; }
 
         [MaxLength(100)]
-        public string LocalName { get; set; }
+        public string? LocalName { get; set; }
 
         public int CountryId { get; set; }
 
         public LocationCountry Country { get; set; }
 
-        public ICollection<LocationCity> StateCities { get; set; }
+        public ICollection<LocationCity> RegionCities { get; set; }
     }
 }

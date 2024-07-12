@@ -16,7 +16,7 @@ namespace ECraft.Data
 
         public DbSet<LocationCountry> LCountries { get; set; }
 
-        public DbSet<LocationState> LStates { get; set; }
+        public DbSet<LocationRegion> LRegions { get; set; }
 
         public DbSet<LocationCity> LCities { get; set; }
 

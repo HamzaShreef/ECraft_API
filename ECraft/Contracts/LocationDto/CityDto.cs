@@ -14,7 +14,7 @@ namespace ECraft.Contracts.LocationDto
 
 		public int CountryId { get; set; }
 
-		public int? StateId { get; set; }
+		public int? RegionId { get; set; }
 
 		public LocationCity GetDomainEntity(out bool successfulMapping, out IdentityError? validationError, LocationCity? oldInstance=null)
 		{
@@ -27,13 +27,13 @@ namespace ECraft.Contracts.LocationDto
 				{
 					CityName = this.CityName,
 					CountryId = this.CountryId,
-					StateId = this.StateId,
+					RegionId = this.RegionId,
 				};
 			}
 			else
 			{
 				oldInstance.CityName=this.CityName;
-				oldInstance.StateId=this.StateId;
+				oldInstance.RegionId=this.RegionId;
 				oldInstance.CountryId=this.CountryId;
 				return oldInstance;
 			}
@@ -47,7 +47,7 @@ namespace ECraft.Contracts.LocationDto
 
 			this.CityId = domainEntity.Id;
 			this.CityName = domainEntity.CityName;
-			this.StateId = domainEntity.StateId;
+			this.RegionId = domainEntity.RegionId;
 			this.CountryId = domainEntity.CountryId;
 
 			return this;

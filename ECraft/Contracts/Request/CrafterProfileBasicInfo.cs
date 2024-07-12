@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace ECraft.Contracts.Request
 {
-	public class CrafterProfileRequest
+	public class CrafterProfileBasicInfo
 	{
         public int CraftId { get; set; }
 
@@ -17,7 +17,7 @@ namespace ECraft.Contracts.Request
 
         [MinLength(20)]
         [MaxLength(StringPropertyLengths.AboutCrafterMax)]
-        public string About { get; set; }
+        public string? About { get; set; }
 
         [MinLength(3)]
         [MaxLength(StringPropertyLengths.CrafterTitleMax)]
@@ -25,7 +25,7 @@ namespace ECraft.Contracts.Request
 
 		[MinLength(3)]
 		[MaxLength(250)]
-		public string WorkLocation { get; set; }
+		public string? WorkLocation { get; set; }
 
 	}
 }

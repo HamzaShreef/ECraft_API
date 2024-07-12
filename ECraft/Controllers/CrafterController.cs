@@ -1,5 +1,6 @@
 ﻿using ECraft.Constants;
 using ECraft.Contracts.Request;
+using ECraft.Contracts.Response;
 using ECraft.Data;
 using ECraft.Domain;
 using ECraft.Extensions;
@@ -35,9 +36,10 @@ namespace ECraft.Controllers
 		[ProducesResponseType(StatusCodes.Status200OK)]
 		[ProducesResponseType(StatusCodes.Status400BadRequest)]
 		[ProducesResponseType(StatusCodes.Status404NotFound)]
-		public async Task<IActionResult> CreateAccount([FromBody] CrafterProfileRequest crafterInfo)
+		public async Task<IActionResult> CreateAccount([FromBody] CrafterProfileBasicInfo crafterInfo)
 		{
 			ErrorList errors = new ErrorList();
+
 
 			if (ModelState.IsValid)
 			{
@@ -53,13 +55,12 @@ namespace ECraft.Controllers
 					return NotFound();
 				}
 
-				CrafterProfile? existingProfile = await _db.Crafters.FirstOrDefaultAsync(c => c.UserId == uid);
-				if (existingProfile is not null)
+				//CrafterProfile? existingProfile = await _db.Crafters.FirstOrDefaultAsync(c => c.UserId == uid);
+				if (userRecord.CrafterProfileId is not null)
 				{
 					errors.AddError(GeneralErrorCodes.CrafterProfileAlreadyCreated, "There is already a crafter profile created for this user");
 					return BadRequest(errors);
 				}
-
 
 
 
@@ -81,7 +82,7 @@ namespace ECraft.Controllers
 				}
 
 
-				userRecord.CityId= crafterInfo.CityId;
+				userRecord.CityId = crafterInfo.CityId;
 
 				CrafterProfile newCrafter = new CrafterProfile()
 				{
@@ -93,40 +94,50 @@ namespace ECraft.Controllers
 
 
 
-				await _db.Crafters.AddAsync(newCrafter);
-				userRecord.CrafterProfileId = newCrafter.Id;
+				_db.Crafters.Add(newCrafter);
+				_db.UserRoles.Add(new Models.Identity.AppUserRole()
+				{
+					UserId = uid,
+					RoleId = AuthConstants.CrafterRoleId
+				});
 				requesterCity.CraftersCount += 1;
 				craft.CraftersCount += 1;
-				_db.Crafts.Update(craft);
-				_db.LCities.Update(requesterCity);
+				await _db.SaveChangesAsync(); //Hit 5
+
+				userRecord.IsCrafter = true;
+				userRecord.CrafterProfileId = newCrafter.Id;
 				//Hit 4
 				await _db.SaveChangesAsync();
-				
+
 				return Ok(crafterInfo);
 			}
 			else
 				return BadRequest(ModelState.GetErrorList());
+
 		}
 
 
 		[HttpPatch]
-		[Authorize]
-		public async Task<IActionResult> EditAccount([FromBody] JsonPatchDocument<CrafterProfileRequest> crafterPatchDoc)
+		[Authorize(Roles ="Crafter")]
+		public async Task<IActionResult> EditAccount([FromBody] JsonPatchDocument<CrafterProfileBasicInfo> crafterPatchDoc)
 		{
-			List<IdentityError> errors = new List<IdentityError>();
+			ErrorList errors = new ErrorList();
 
 			try
 			{
 				int uid = User.GetUserId();
 
-				CrafterProfile? crafterProfile = await _db.Crafters.FindAsync(uid);
+
+				CrafterProfile? crafterProfile = await _db.Crafters.FirstOrDefaultAsync(c => c.UserId == uid);
+
 
 				if (crafterProfile is null)
 				{
+					_logger.Log(LogLevel.Critical, "User who is not Crafter is accessing EditCrafterProfile Endpoint");
 					return NotFound();
 				}
 
-				CrafterProfileRequest persitedInfo = new CrafterProfileRequest();
+				CrafterProfileBasicInfo persitedInfo = new CrafterProfileBasicInfo();
 				persitedInfo = persitedInfo.GetDto(crafterProfile);
 
 
@@ -137,9 +148,15 @@ namespace ECraft.Controllers
 				if (!ModelState.IsValid)
 					return BadRequest(ModelState.GetErrorList());
 
+				crafterProfile.CraftId = persitedInfo.CraftId;
+				crafterProfile.ContactPhone = persitedInfo.ContactPhone;
+				crafterProfile.Title = persitedInfo.Title;
 				crafterProfile.About = persitedInfo.About;
-				crafterProfile.Title=persitedInfo.Title;
 				crafterProfile.WorkLocation = persitedInfo.WorkLocation;
+
+				await _db.SaveChangesAsync();
+
+				return Ok(persitedInfo);
 
 
 			}
@@ -149,11 +166,33 @@ namespace ECraft.Controllers
 				return StatusCode(StatusCodes.Status500InternalServerError);
 				//Logger Call
 			}
-
-
-			return Ok("Under Construction");
 		}
-	
+
+
+		[HttpGet]
+		[Authorize(Roles = "Crafter")]
+		[ProducesResponseType(StatusCodes.Status200OK)]
+		[ProducesResponseType(StatusCodes.Status400BadRequest)]
+		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
+		public async Task<IActionResult> GetProfile()
+		{
+			int uid = User.GetUserId();
+
+			var profile = await _db.Crafters.FirstOrDefaultAsync(c => c.UserId == uid);
+			if (profile is null)
+				return NotFound();
+
+			CrafterProfileResponse response = new CrafterProfileResponse();
+			response = response.GetResponseDto(profile);
+
+			
+				
+
+
+
+			return Ok(response);
+
+		}
 		
 		//AddSkill
 		//GetProfile

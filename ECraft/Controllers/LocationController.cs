@@ -1,6 +1,7 @@
 ﻿using ECraft.Constants;
 using ECraft.Contracts.LocationDto;
 using ECraft.Data;
+using ECraft.Domain;
 using ECraft.Extensions;
 using ECraft.Models;
 using Microsoft.AspNetCore.Authorization;
@@ -45,20 +46,20 @@ namespace ECraft.Controllers
 			return Ok(countryDto);
 		}
 
-		[HttpGet("state/{stateId}")]
-		public async Task<IActionResult> GetState(int stateId)
+		[HttpGet("state/{RegionId}")]
+		public async Task<IActionResult> GetState(int RegionId)
 		{
-			LocationState stateWithCities = await _db.LStates.Where(s => s.Id == stateId)
-				.Include(s => s.StateCities)
+			LocationRegion stateWithCities = await _db.LRegions.Where(s => s.Id == RegionId)
+				.Include(s => s.RegionCities)
 				.FirstOrDefaultAsync();
 
 			if (stateWithCities is null)
-				return NotFound("Invalid StateId");
+				return NotFound("Invalid RegionId");
 
 			StateDto stateDto = new StateWithCitiesDto()
 			{
-				StateCities = stateWithCities.StateCities.ToList().Select(c => new CityDto().GetDto(c)),
-				CitiesCount=stateWithCities.StateCities.Count
+				RegionCities = stateWithCities.RegionCities.ToList().Select(c => new CityDto().GetDto(c)),
+				CitiesCount=stateWithCities.RegionCities.Count
 			}.GetDto(stateWithCities);
 
 
@@ -98,7 +99,9 @@ namespace ECraft.Controllers
 				}
 				catch (Exception ex)
 				{
-					return StatusCode(StatusCodes.Status500InternalServerError, "Service is down");
+					var errors = new ErrorList();
+					errors.AddError(GeneralErrorCodes.ServiceDown, ex.Message);
+					return StatusCode(StatusCodes.Status500InternalServerError, errors);
 				}
 
 				countryDto.CountryId = newCountryRecord.Id;
@@ -131,9 +134,9 @@ namespace ECraft.Controllers
 
 				
 
-				LocationState newStateRecord = stateDto.GetDomainEntity(out bool successfulMapping, out IdentityError? validationError);
+				LocationRegion newStateRecord = stateDto.GetDomainEntity(out bool successfulMapping, out IdentityError? validationError);
 
-				_db.LStates.Add(newStateRecord);
+				_db.LRegions.Add(newStateRecord);
 
 				try
 				{
@@ -141,18 +144,12 @@ namespace ECraft.Controllers
 				}
 				catch (Exception ex)
 				{
-					IdentityError error = new IdentityError()
-					{
-						Code = GeneralErrorCodes.ServiceDown,
-						Description = ex.Message
-
-					};
-					
-					var errors = new List<IdentityError>() { error };
+					var errors = new ErrorList();
+					errors.AddError(GeneralErrorCodes.ServiceDown,ex.Message);
 					return StatusCode(StatusCodes.Status500InternalServerError, errors);
 				}
 
-				stateDto.StateId = newStateRecord.Id;
+				stateDto.RegionId = newStateRecord.Id;
 				return Ok(stateDto);
 			}
 			else
@@ -180,7 +177,7 @@ namespace ECraft.Controllers
 			if (ModelState.IsValid)
 			{
 				int countryId = cityDto.CountryId;
-				int? stateId = cityDto.StateId;
+				int? RegionId = cityDto.RegionId;
 
 
 				bool validCountryId = await _db.LCountries.AnyAsync(c => c.Id == countryId);
@@ -188,13 +185,13 @@ namespace ECraft.Controllers
 				if (!validCountryId)
 					return NotFound("CountryId does not match a stored record");
 
-				if (stateId.HasValue)
+				if (RegionId.HasValue)
 				{
-					bool validStateId = await _db.LStates.AnyAsync(s => s.Id == stateId);
+					bool validRegionId = await _db.LRegions.AnyAsync(s => s.Id == RegionId);
 
 
-					if (!validStateId)
-						return NotFound("StateId does not match a stored record");
+					if (!validRegionId)
+						return NotFound("RegionId does not match a stored record");
 				}
 
 

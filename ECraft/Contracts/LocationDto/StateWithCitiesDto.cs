@@ -2,7 +2,7 @@
 {
 	public class StateWithCitiesDto:StateDto
 	{
-        public IEnumerable<CityDto>? StateCities { get; set; }
+        public IEnumerable<CityDto>? RegionCities { get; set; }
 
         public int CitiesCount { get; set; } = 0;
     }

@@ -4,6 +4,8 @@
 	{
 		public const string RefreshTokenCryptoPurpose = "RefreshToken";
 
+		public const int CrafterRoleId = 2;
+
         public static class Errors
 		{
 			public const string EmailUsedError = "MailTaken";

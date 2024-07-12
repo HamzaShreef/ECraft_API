@@ -13,5 +13,7 @@
         public string RefreshToken { get; set; }
 
         public DateTime ExpiryDate { get; set; }
+
+        public bool IsCrafter { get; set; }
     }
 }

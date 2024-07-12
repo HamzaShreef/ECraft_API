@@ -10,7 +10,6 @@ namespace ECraft.Models
         [ForeignKey(nameof(UserRecord))]
         public int UserId { get; set; }
 
-
         public AppUser UserRecord { get; set; }
 
         [MaxLength(20)]
@@ -33,6 +32,8 @@ namespace ECraft.Models
 
         public int ViewsCount { get; set; } = 0;
 
+        public int LikesCount { get; set; }
+
         public ExperienceLevel ExperienceLevel { get; set; }
 
         public Craft Craft { get; set; }
@@ -41,7 +42,14 @@ namespace ECraft.Models
 
         public int SkillsCount { get; set; }
 
-        public ICollection<CraftProject> PortofolioProjects { get; set; }
+        public int ProjectsCount { get; set; }
+
+        //For Precise Location
+		public double? Latitude { get; set; }
+
+		public double? Longitude { get; set; }
+
+		public ICollection<CraftProject> PortofolioProjects { get; set; }
 
         public ICollection<CrafterSkill> Skills { get; set; }
 

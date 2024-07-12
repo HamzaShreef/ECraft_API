@@ -97,14 +97,6 @@ namespace ECraft.Services
 			}
 			else
 			{
-
-				//List<IdentityError> errors = regResult.Errors.Select(err => new IdentityError()
-				//{
-				//	Code = err.Code,
-				//	Description = err.Description
-				//}).ToList();
-
-				//invalidResult.Errors = new ErrorList();
 				invalidResult.Errors.AddRange(regResult.Errors);
 
 				return invalidResult;
@@ -132,6 +124,9 @@ namespace ECraft.Services
 
 			if(!validCredentials)
 				return invalidResult;
+
+			userRecord.LastLogin = DateTime.UtcNow;
+			await _db.SaveChangesAsync();
 
 			return await generateAuthResultAsync(userRecord);
 		}
@@ -325,6 +320,7 @@ namespace ECraft.Services
 			result.Succeeded = true;
 			result.Name = user.FirstName + " " + user.LastName;
 			result.ImgUrl = user.ProfileImg;
+			result.IsCrafter = user.IsCrafter;
 			result.ExpriryDate = DateTime.UtcNow + _jwtSettings.TokenLifeTime;
 
 			

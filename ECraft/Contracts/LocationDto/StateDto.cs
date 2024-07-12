@@ -4,41 +4,41 @@ using System.ComponentModel.DataAnnotations;
 
 namespace ECraft.Contracts.LocationDto
 {
-	public class StateDto:IDtoMapping<StateDto,LocationState>
+	public class StateDto:IDtoMapping<StateDto,LocationRegion>
 	{
-        public int StateId { get; set; }
+        public int RegionId { get; set; }
 
         [MaxLength(100)]
 		[MinLength(2)]
-        public string StateName { get; set; }
+        public string RegionName { get; set; }
 
         public int CountryId { get; set; }
 
-		public LocationState GetDomainEntity(out bool successfulMapping, out IdentityError? validationError, LocationState? oldInstance=null)
+		public LocationRegion GetDomainEntity(out bool successfulMapping, out IdentityError? validationError, LocationRegion? oldInstance=null)
 		{
 			successfulMapping = true;
 			validationError = null;
 
 			if (oldInstance is null)
-				return new LocationState()
+				return new LocationRegion()
 				{
 					CountryId = this.CountryId,
-					StateName = this.StateName,
+					RegionName = this.RegionName,
 				};
 
 			oldInstance.CountryId = this.CountryId;
-			oldInstance.StateName = this.StateName;
+			oldInstance.RegionName = this.RegionName;
 
 			return oldInstance;
 		}
 
-		public StateDto GetDto(LocationState domainEntity)
+		public StateDto GetDto(LocationRegion domainEntity)
 		{
 			if (domainEntity is null)
 				return null;
 
-			this.StateId= domainEntity.Id;
-			this.StateName= domainEntity.StateName;
+			this.RegionId= domainEntity.Id;
+			this.RegionName= domainEntity.RegionName;
 			this.CountryId= domainEntity.CountryId;
 
 			return this;

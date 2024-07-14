@@ -12,8 +12,6 @@ namespace ECraft.Contracts.Request
         [DataType(DataType.PhoneNumber)]
         public string ContactPhone { get; set; }
 
-        [Required]
-        public int CityId { get; set; }
 
         [MinLength(20)]
         [MaxLength(StringPropertyLengths.AboutCrafterMax)]

@@ -264,21 +264,22 @@ namespace ECraft.Services
 			return await generateAuthResultAsync(user);
 		}
 
-		public async Task<AuthResult> UpdateAccount(AppUser updatedUserRecord)
-		{
-			var updatingResult = await _userManager.UpdateAsync(updatedUserRecord);
+		//public async Task<AuthResult> UpdateAccount(AppUser updatedUserRecord)
+		//{
+		//	var updatingResult = await _userManager.UpdateAsync(updatedUserRecord);
 
-			if (updatingResult.Succeeded)
-				return new AuthResult() { Succeeded = true };
-			else
-			{
-				var authResult = new AuthResult() { Succeeded = false, Errors = new ErrorList() };
-				authResult.Errors.AddRange(updatingResult.Errors);
-				return authResult;
-			}
-		}
+		//	if (updatingResult.Succeeded)
+		//		return new AuthResult() { Succeeded = true };
+		//	else
+		//	{
+		//		var authResult = new AuthResult() { Succeeded = false, Errors = new ErrorList() };
+		//		authResult.Errors.AddRange(updatingResult.Errors);
+		//		return authResult;
+		//	}
+		//}
 
 		//Private Methods
+
 		private async Task<AuthResult> generateAuthResultAsync(AppUser user)
 		{
 			var result = new AuthResult() { };

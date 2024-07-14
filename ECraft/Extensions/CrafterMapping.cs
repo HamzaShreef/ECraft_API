@@ -47,7 +47,7 @@ namespace ECraft.Extensions
 			return persistedProfile;
 		}
 
-		public static PublicProfileResponse GetResponseDto(this PublicProfileResponse profileInfo, CrafterProfile domainEntity)
+		public static PublicProfileResponse GetResponseDto(this PublicProfileResponse profileInfo, CrafterProfile domainEntity,Craft craft=null,UserProfileResponse userProfile=null)
 		{
 			if (profileInfo == null)
 			{
@@ -66,17 +66,19 @@ namespace ECraft.Extensions
 			profileInfo.ReviewsCount = domainEntity.ReviewsCount;
 			profileInfo.LikesCount = domainEntity.LikesCount;
 
-			if(domainEntity.Craft is not null)
+			if(craft is not null)
 			{
-				profileInfo.CraftTitle = domainEntity.Craft.Title;
-				profileInfo.CraftIcon = domainEntity.Craft.Icon;
+				profileInfo.CraftTitle = craft.Title;
+				profileInfo.CraftIcon = craft.Icon;
 			}
 
-			if(domainEntity.UserRecord is not null)
+			if(userProfile is not null)
 			{
-				profileInfo.FirstName = domainEntity.UserRecord.FirstName;
-				profileInfo.LastName = domainEntity.UserRecord.LastName;
-				profileInfo.UserName = domainEntity.UserRecord.UserName;
+				profileInfo.FirstName = userProfile.FirstName;
+				profileInfo.LastName = userProfile.LastName;
+				profileInfo.UserName = userProfile.UserName;
+				profileInfo.ProfileImg = userProfile.Picture;
+				profileInfo.IsMale = userProfile.isMale;
 			}
 
 

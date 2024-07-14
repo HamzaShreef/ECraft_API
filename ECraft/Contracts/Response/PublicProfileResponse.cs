@@ -26,10 +26,22 @@ namespace ECraft.Contracts.Response
 
         public int LikesCount { get; set; } = 0;
 
+        public string? ProfileImg { get; set; }
+
+        public bool IsMale { get; set; }
+
         //Navigation Scalars
+        public int CityId { get; set; }
+
         public string CityName { get; set; }
 
+        public int CountryId { get; set; }
+
         public string CountryName { get; set; }
+
+        public int? RegionId { get; set; }
+
+        public string RegionName { get; set; }
 
         public string CraftTitle {  get; set; }
 

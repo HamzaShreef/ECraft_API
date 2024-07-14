@@ -22,5 +22,10 @@ namespace ECraft.Contracts.Request
 		[RegularExpression(@"^[a-z]{3,10}[_]{0,1}[a-z]{0,10}[0-9]{0,4}$", ErrorMessage = "Invalid UserName Format")]
 		public string? UserName { get; set; }
 
-	}
+        public int? CityId { get; set; }
+
+		[MaxLength(250)]
+        public string? LocationText { get; set; }
+
+    }
 }

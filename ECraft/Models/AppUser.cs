@@ -35,7 +35,7 @@ namespace ECraft.Models
 		public LocationCity? City { get; set; }
 
 		[MaxLength(250)]
-		public string? ExtraLocationDetails { get; set; }
+		public string? LocationText { get; set; }
 
 		[NotMapped]
 		public int? Age

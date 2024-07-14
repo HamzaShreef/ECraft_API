@@ -30,11 +30,13 @@ namespace ECraft.Controllers
 	{
 		private readonly IAuthService _authService;
 		private readonly AppDbContext _db;
+		ILogger<AuthController> _logger;
 
-		public AuthController(IAuthService authService,AppDbContext db)
+		public AuthController(IAuthService authService,AppDbContext db,ILogger<AuthController> logger)
 		{
 			_authService = authService;
 			_db = db;
+			_logger = logger;
 		}
 
 		
@@ -77,62 +79,87 @@ namespace ECraft.Controllers
 		[Authorize]
 		public async Task<IActionResult> EditProfile([FromBody]JsonPatchDocument<EditProfileRequest> patchDoc)
 		{
-			int uid = int.Parse(HttpContext.User.FindFirstValue("uid") ?? "0");
-			var profile = await _db.Users.FindAsync(uid);
-
-			if (profile == null)
-				return NotFound();
-
-
-			EditProfileRequest persitedInfo = new EditProfileRequest();
-			persitedInfo = persitedInfo.GetDto(profile);
-			
-
-			patchDoc.ApplyTo(persitedInfo,ModelState);
-
-			TryValidateModel(persitedInfo);
-
-			if (!ModelState.IsValid)
-				return BadRequest(ModelState.GetErrorList());
-
-			ErrorList errors = new ErrorList();
-
-			//UserName validation
-			if (persitedInfo.UserName != profile.UserName)
+			try
 			{
-				if (string.IsNullOrEmpty(persitedInfo.UserName))
+				int uid = int.Parse(HttpContext.User.FindFirstValue("uid") ?? "0");
+				var profile = await _db.Users.FindAsync(uid);
+
+				if (profile == null)
+					return NotFound();
+
+
+				EditProfileRequest persitedInfo = new EditProfileRequest();
+				persitedInfo = persitedInfo.GetDto(profile);
+
+
+				patchDoc.ApplyTo(persitedInfo, ModelState);
+
+				TryValidateModel(persitedInfo);
+
+				if (!ModelState.IsValid)
+					return BadRequest(ModelState.GetErrorList());
+
+				ErrorList errors = new ErrorList();
+
+				//UserName validation
+				if (persitedInfo.UserName != profile.UserName)
 				{
-					errors.AddError(AuthConstants.Errors.NullUserNameError, "Username cannot be left empty.");
-					return BadRequest(errors);
-				}
-				bool reservedUserName = await _db.Users.AnyAsync(u => u.NormalizedUserName == persitedInfo.UserName.ToUpper());
+					if (string.IsNullOrEmpty(persitedInfo.UserName))
+					{
+						errors.AddError(AuthConstants.Errors.NullUserNameError, "Username cannot be left empty.");
+						return BadRequest(errors);
+					}
+					bool reservedUserName = await _db.Users.AnyAsync(u => u.NormalizedUserName == persitedInfo.UserName.ToUpper());
 
-				if (reservedUserName)
+					if (reservedUserName)
+					{
+						errors.AddError(AuthConstants.Errors.UsernameUsedError, "Use a different UserName");
+
+						return BadRequest(errors);
+					}
+				}
+
+				//CityId Validation
+				if (persitedInfo.CityId != profile.CityId)
 				{
-					errors.AddError(AuthConstants.Errors.UsernameUsedError, "Use a different UserName");
+					var existingCity = await _db.LCities.FirstOrDefaultAsync(c => c.Id == persitedInfo.CityId);
 
-					return BadRequest(errors);
+					if (existingCity is null)
+					{
+						errors.AddError(GeneralErrorCodes.InvalidCitySelection, "The CityId Parameter passed is incorrect");
+						return NotFound(errors);
+					}
+					else
+					{
+						if (profile.CityId == null)
+						{
+							//concurrency issue passible here
+							existingCity.UsersCount += 1;
+						}
+						profile.CityId = persitedInfo.CityId;
+					}
 				}
-			}
 
 
 
-			//local means ther's no roundtrips to the database or anywhere else.
-			bool localBusinessValidation;
-			profile = persitedInfo.GetDomainEntity(out localBusinessValidation, out ErrorList? validationErrors, profile);
+				//local means ther's no roundtrips to the database or anywhere else.
+				bool localBusinessValidation;
+				profile = persitedInfo.GetDomainEntity(out localBusinessValidation, out ErrorList? validationErrors, profile);
 
-			if (!localBusinessValidation)
-			{
-				return BadRequest(validationErrors);
-			}
+				if (!localBusinessValidation)
+				{
+					return BadRequest(validationErrors);
+				}
 
+				await _db.SaveChangesAsync();
 
-			var updateResult = await _authService.UpdateAccount(profile);
-			if (updateResult.Succeeded)
 				return Ok(persitedInfo);
-			else
-				return StatusCode(StatusCodes.Status500InternalServerError,updateResult.Errors);
 
+			}
+			catch(Exception ex) 
+			{
+				return this.ReturnServerDownError(ex, _logger);
+			}
 
 		}
 

@@ -58,7 +58,7 @@ namespace ECraft.Extensions
                 var errorCollection = value.Errors;
                 foreach (var error in errorCollection)
                 {
-                    result.AddError(error.GetHashCode().ToString(), error.ErrorMessage);
+                    result.AddError(error.ErrorMessage.Replace(' ','_').ToUpperInvariant(), error.ErrorMessage);
                 }
             }
 

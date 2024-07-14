@@ -11,7 +11,7 @@ namespace ECraft.Services
 
 		Task<AuthResult> CreateAccount(AccountRequest registerRequest);
 
-		Task<AuthResult> UpdateAccount(AppUser updatedUserRecord);
+		//Task<AuthResult> UpdateAccount(AppUser updatedUserRecord);
 
 		Task<AuthResult> RefreshToken(RefreshTokenRequest refreshTokenRequest);
 

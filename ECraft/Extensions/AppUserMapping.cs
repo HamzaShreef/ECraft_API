@@ -17,6 +17,8 @@ namespace ECraft
 			{
 				oldInstance.FirstName = user.FirstName;
 				oldInstance.LastName = user.LastName;
+				oldInstance.LocationText = user.LocationText;
+				//oldInstance.CityId= user.CityId;
 				oldInstance.UserName = user.UserName;
 				oldInstance.NormalizedUserName = user.UserName?.ToUpper();
 
@@ -38,7 +40,9 @@ namespace ECraft
 				{
 					FirstName = user.FirstName,
 					LastName = user.LastName,
-					UserName = user.UserName
+					UserName = user.UserName,
+					LocationText=user.LocationText,
+					CityId= user.CityId
 				};
 
 				return updatedInstance;
@@ -56,6 +60,8 @@ namespace ECraft
 			user.LastName = domainEntity.LastName;
 			user.UserName = domainEntity.UserName;
 			user.Dob = domainEntity.Dob;
+			user.CityId=domainEntity.CityId;
+			user.LocationText = domainEntity.LocationText;
 
 			return user;
 		}

@@ -68,18 +68,17 @@ namespace ECraft.Controllers
 					if (craft is null)
 						return NotFound("Referenced Craft Not Found");
 
-					//Hit 3
-					LocationCity? requesterCity = await _db.LCities.FindAsync(crafterInfo.CityId);
 
-
-					//CityId Validation
-					if (requesterCity is null)
+					if (userRecord.CityId is null)
 					{
-						return NotFound("Referenced City Not Found");
+						errors.AddError(GeneralErrorCodes.CitySelectionRequired, "User should have an assigned city on their account");
+						return BadRequest(errors);
 					}
 
 
-					userRecord.CityId = crafterInfo.CityId;
+					//Hit 3
+					LocationCity? requesterCity = await _db.LCities.FindAsync(userRecord.CityId);
+
 
 					CrafterProfile newCrafter = new CrafterProfile()
 					{
@@ -99,12 +98,13 @@ namespace ECraft.Controllers
 					});
 					requesterCity.CraftersCount++;
 					craft.CraftersCount++;
-					await _db.SaveChangesAsync(); //Hit 5
+					await _db.SaveChangesAsync(); //Hit 4
 
 					userRecord.IsCrafter = true;
 					userRecord.CrafterProfileId = newCrafter.Id;
-					//Hit 4
+					//Hit 5
 					await _db.SaveChangesAsync();
+
 
 					return Ok(crafterInfo);
 				}
@@ -174,20 +174,20 @@ namespace ECraft.Controllers
 		{
 			int uid = User.GetUserId();
 
-			//return await getProfile(c => c.UserId == uid, ct, true);
-			try
-			{
+			return await getProfile(c => c.UserId == uid, ct, true);
+			//try
+			//{
 
-				var profile =  await _db.Database.SqlQueryRaw<object>($"Exec GetCrafterProfile {uid}").FirstOrDefaultAsync(ct);
-				if (profile is null)
-					return NotFound();
-				else
-					return Ok(profile);
-			}
-			catch(Exception ex)
-			{
-				return this.ReturnServerDownError(ex, _logger);
-			}
+			//	var profile =  await _db.Database.SqlQueryRaw<object>($"Exec GetCrafterProfile {uid}").FirstOrDefaultAsync(ct);
+			//	if (profile is null)
+			//		return NotFound();
+			//	else
+			//		return Ok(profile);
+			//}
+			//catch(Exception ex)
+			//{
+			//	return this.ReturnServerDownError(ex, _logger);
+			//}
 
 
 		}
@@ -397,17 +397,17 @@ namespace ECraft.Controllers
 			{
 				int uid = User.GetUserId();
 
-				CrafterProfile? profile = await _db.Crafters.Where(predicate)
-					.Include(c => c.UserRecord)
-					.Include(c => c.Craft).AsNoTracking()
-					.FirstOrDefaultAsync(ct);
+				//CrafterProfile? profile = await _db.Crafters.Where(predicate)
+				//	.Include(c => c.UserRecord)
+				//	.Include(c => c.Craft).AsNoTracking()
+				//	.FirstOrDefaultAsync(ct);
 
 
 				var crafterProfile = await _db.Crafters.Where(predicate)
 					.Select(c => new
 					{
-						CrafterProfile = c,
-						UserRecord = new UserProfileResponse
+						Profile = c,
+						UserProfile = new UserProfileResponse
 						{
 							UserId = c.UserRecord.Id,
 							FirstName = c.UserRecord.FirstName,
@@ -422,7 +422,12 @@ namespace ECraft.Controllers
 						CrafterRegion = c.UserRecord.City != null ? c.UserRecord.City.Region : null
 					}).FirstOrDefaultAsync(ct);
 
+                if (crafterProfile is null)
+                {
+					return NotFound();
+                }
 
+                CrafterProfile? profile = crafterProfile.Profile;
 
 
 				if (profile is null)
@@ -431,22 +436,38 @@ namespace ECraft.Controllers
 				}
 
 				PublicProfileResponse response = new PublicProfileResponse();
-				response = response.GetResponseDto(profile);
+				response = response.GetResponseDto(profile,crafterProfile.CrafterCraft,crafterProfile.UserProfile);
 
 
 
-				//Fetching their Location info
-				var locationInfo = await _db.LCities.Where(c => c.Id == profile.UserRecord.CityId)
-					.Include(city => city.Country)
-					.Include(city => city.Region)
-					.FirstOrDefaultAsync(ct);
+				////Fetching their Location info
+				//var crafterCityInfo = await _db.LCities.Where(c => c.Id == profile.UserRecord.CityId)
+				//	.Include(city => city.Country)
+				//	.Include(city => city.Region)
+				//	.FirstOrDefaultAsync(ct);
 
-				if (locationInfo is not null)
+				var crafterCityInfo = crafterProfile.CrafterCity;
+				var crafterCountryInfo = crafterProfile.CrafterCountry;
+				var crafterRegionInfo = crafterProfile.CrafterRegion;
+
+				if (crafterCityInfo is not null)
 				{
-					response.CityName = locationInfo.LocalName ?? locationInfo.CityName;
-					response.CountryName = locationInfo.Country.LocalName ?? locationInfo.Country.CountryName;
+					response.CityId = crafterCityInfo.Id;
+					response.CityName = crafterCityInfo.LocalName ?? crafterCityInfo.CityName;
 				}
 
+				if (crafterCountryInfo is not null)
+				{
+					response.CountryId = crafterCountryInfo.Id;
+					response.CountryName = crafterCountryInfo.LocalName ?? crafterCountryInfo.CountryName;
+				}
+
+				
+				if (crafterRegionInfo is not null)
+				{
+					response.RegionId = crafterRegionInfo.Id;
+					response.RegionName = crafterRegionInfo.LocalName ?? crafterRegionInfo.RegionName;
+				}
 				//If it's not the requester profile
 				if (!includePrivate)
 				{

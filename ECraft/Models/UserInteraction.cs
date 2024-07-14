@@ -1,6 +1,6 @@
 ﻿namespace ECraft.Models
 {
-	public class UserInteraction : BaseEntity<int>
+	public class UserInteraction : BaseEntity<long>
 	{
 		public int InteractorId { get; set; }
 

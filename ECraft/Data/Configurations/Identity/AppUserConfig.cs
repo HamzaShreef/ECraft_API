@@ -31,7 +31,6 @@ namespace ECraft.Data.Configurations.Identity
             builder.Property(u => u.ConcurrencyStamp).HasMaxLength(50);
             builder.Property(u => u.PasswordHash).HasMaxLength(256);
 
-            builder.HasOne(u => u.CrafterProfile).WithOne(c => c.UserRecord).HasForeignKey<AppUser>(u => u.CrafterProfileId).IsRequired(false);
             builder.HasMany(u => u.RefreshTokens).WithOne(tk => tk.User).HasForeignKey(tk => tk.UserId).IsRequired();
 
             builder.ToTable(nameof(AppUser));

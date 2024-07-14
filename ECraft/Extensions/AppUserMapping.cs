@@ -1,14 +1,17 @@
-﻿using ECraft.Contracts.Request;
+﻿using ECraft.Constants;
+using ECraft.Contracts.Request;
+using ECraft.Domain;
 using ECraft.Models;
+using Microsoft.AspNetCore.Identity;
 
 namespace ECraft
 {
 	public static class AppUserMapping
 	{
-		public static AppUser GetDomainEntity(this EditProfileRequest user, out bool successfulMapping, out string validationErrorMessage, AppUser? oldInstance)
+		public static AppUser GetDomainEntity(this EditProfileRequest user, out bool successfulMapping, out ErrorList? validationErrors, AppUser? oldInstance)
 		{
 			successfulMapping = true;
-			validationErrorMessage = string.Empty;
+			validationErrors = null;
 
 			if (oldInstance != null)
 			{
@@ -17,11 +20,12 @@ namespace ECraft
 				oldInstance.UserName = user.UserName;
 				oldInstance.NormalizedUserName = user.UserName?.ToUpper();
 
-				validationErrorMessage = string.Empty;
 
 				if (user.Dob != null && !oldInstance.SetDob(user.Dob.Value))
 				{
-					validationErrorMessage = "Age doesn't meet the minimum requirements";
+					validationErrors = new ErrorList();
+					validationErrors.AddError(AuthConstants.Errors.DobError, "Age doesn't meet the minimum requirements");
+
 					successfulMapping = false;
 				}
 
@@ -30,19 +34,23 @@ namespace ECraft
 			}
 			else
 			{
-				var updatedInstance = new AppUser(user.FirstName, user.LastName)
+				var updatedInstance = new AppUser()
 				{
+					FirstName = user.FirstName,
+					LastName = user.LastName,
 					UserName = user.UserName
 				};
 
 				return updatedInstance;
 			}
-		}
+		
+		}	
 
 		public static EditProfileRequest GetDto(this EditProfileRequest user, AppUser domainEntity)
 		{
 			if (domainEntity is null)
 				return null;
+
 
 			user.FirstName = domainEntity.FirstName;
 			user.LastName = domainEntity.LastName;
@@ -51,5 +59,6 @@ namespace ECraft
 
 			return user;
 		}
+
 	}
 }

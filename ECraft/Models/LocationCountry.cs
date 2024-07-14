@@ -18,6 +18,6 @@ namespace ECraft.Models
 
 		public ICollection<LocationCity> CountryCities { get; set; }
 
-		public ICollection<LocationRegion> CountryStates { get; set; }
+		public ICollection<LocationRegion> CountryRegions { get; set; }
 	}
 }

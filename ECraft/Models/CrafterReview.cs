@@ -2,7 +2,7 @@
 
 namespace ECraft.Models
 {
-	public class Review : BaseEntity<int>
+	public class CrafterReview : BaseEntity<long>
 	{
         public int ReviewerId { get; set; }
 
@@ -16,6 +16,8 @@ namespace ECraft.Models
         public byte StarCount { get; set; } = 0;
 
         public int? ProjectId { get; set; }
+
+        public int LikesCount { get; set; } = 0;
 
         public CraftProject? Project { get; set; }
 

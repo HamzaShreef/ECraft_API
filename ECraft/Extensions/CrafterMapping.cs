@@ -1,6 +1,8 @@
-﻿using ECraft.Contracts.Request;
+﻿using Azure;
+using ECraft.Contracts.Request;
 using ECraft.Contracts.Response;
 using ECraft.Models;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace ECraft.Extensions
 {
@@ -20,6 +22,8 @@ namespace ECraft.Extensions
 			profileRequest.Title = domainEntity.Title;
 			profileRequest.About = domainEntity.About;
 			profileRequest.WorkLocation = domainEntity.WorkLocation;
+			profileRequest.LocationLongitude = domainEntity.Longitude;
+			profileRequest.LocationLatitude = domainEntity.Latitude;
 
 
 			return profileRequest;
@@ -27,20 +31,27 @@ namespace ECraft.Extensions
 
 		public static CrafterProfile GetDomainEntity(this CrafterProfileBasicInfo crafterProfileRequest, CrafterProfile persistedProfile)
 		{
+			if (persistedProfile is null)
+			{
+				persistedProfile = new CrafterProfile();
+			}
+
 			persistedProfile.CraftId= crafterProfileRequest.CraftId;
 			persistedProfile.ContactPhone = crafterProfileRequest.ContactPhone;
 			persistedProfile.Title = crafterProfileRequest.Title;
 			persistedProfile.About=crafterProfileRequest.About;
 			persistedProfile.WorkLocation = crafterProfileRequest.WorkLocation;
+			persistedProfile.Latitude = crafterProfileRequest.LocationLatitude;
+			persistedProfile.Longitude = crafterProfileRequest.LocationLongitude;
 
 			return persistedProfile;
 		}
 
-		public static CrafterProfileResponse GetResponseDto(this CrafterProfileResponse profileInfo, CrafterProfile domainEntity)
+		public static PublicProfileResponse GetResponseDto(this PublicProfileResponse profileInfo, CrafterProfile domainEntity)
 		{
 			if (profileInfo == null)
 			{
-				profileInfo = new CrafterProfileResponse();
+				profileInfo = new PublicProfileResponse();
 			}
 			if (domainEntity is null)
 				throw new ArgumentNullException(nameof(domainEntity));
@@ -48,15 +59,38 @@ namespace ECraft.Extensions
 			profileInfo.BasicInfo = profileInfo.BasicInfo.GetDto(domainEntity);
 
 			profileInfo.ProjectsCount = domainEntity.ProjectsCount;
-			profileInfo.ViewsCount = domainEntity.ViewsCount;
+			profileInfo.ProfileId = domainEntity.Id;
 			profileInfo.SkillsCount = domainEntity.SkillsCount;
 			profileInfo.AverageRating = domainEntity.AverageRating;
 			profileInfo.JoinDate = domainEntity.JoinDate;
 			profileInfo.ReviewsCount = domainEntity.ReviewsCount;
+			profileInfo.LikesCount = domainEntity.LikesCount;
+
+			if(domainEntity.Craft is not null)
+			{
+				profileInfo.CraftTitle = domainEntity.Craft.Title;
+				profileInfo.CraftIcon = domainEntity.Craft.Icon;
+			}
+
+			if(domainEntity.UserRecord is not null)
+			{
+				profileInfo.FirstName = domainEntity.UserRecord.FirstName;
+				profileInfo.LastName = domainEntity.UserRecord.LastName;
+				profileInfo.UserName = domainEntity.UserRecord.UserName;
+			}
 
 
 			return profileInfo;
 		}
 
+		public static PrivateProfileResponse GetPrivateInfo(this PrivateProfileResponse profileInfo,PublicProfileResponse publicInfo,CrafterProfile domainEntity)
+		{
+			//profileInfo.PublicInfo=profileInfo.PublicInfo.GetResponseDto(domainEntity);
+
+			profileInfo.PublicInfo = publicInfo;
+			profileInfo.ViewsCount=domainEntity.ViewsCount;
+
+			return profileInfo;
+		}
 	}
 }

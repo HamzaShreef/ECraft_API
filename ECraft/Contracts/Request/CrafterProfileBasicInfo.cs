@@ -27,5 +27,9 @@ namespace ECraft.Contracts.Request
 		[MaxLength(250)]
 		public string? WorkLocation { get; set; }
 
-	}
+        public double? LocationLatitude { get; set; }
+
+        public double? LocationLongitude { get; set; }
+
+    }
 }

@@ -8,7 +8,7 @@ namespace ECraft.Contracts.LocationDto
 
         public int citiesCount { get; set; }
 
-        public IEnumerable<StateDto>? CountryStates { get; set; }
+        public IEnumerable<StateDto>? CountryRegions { get; set; }
 
         public int statesCount { get; set; }
 

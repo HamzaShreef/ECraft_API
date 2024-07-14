@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace ECraft.Contracts.LocationDto
 {
-	public class CityDto : IDtoMapping<CityDto, LocationCity>
+	public class CityDto
 	{
 		public int CityId { get; set; }
 
@@ -16,41 +16,5 @@ namespace ECraft.Contracts.LocationDto
 
 		public int? RegionId { get; set; }
 
-		public LocationCity GetDomainEntity(out bool successfulMapping, out IdentityError? validationError, LocationCity? oldInstance=null)
-		{
-			successfulMapping = true;
-			validationError = null;
-
-			if (oldInstance is null)
-			{
-				return new LocationCity()
-				{
-					CityName = this.CityName,
-					CountryId = this.CountryId,
-					RegionId = this.RegionId,
-				};
-			}
-			else
-			{
-				oldInstance.CityName=this.CityName;
-				oldInstance.RegionId=this.RegionId;
-				oldInstance.CountryId=this.CountryId;
-				return oldInstance;
-			}
-
-		}
-
-		public CityDto GetDto(LocationCity domainEntity)
-		{
-			if (domainEntity is null)
-				return null;
-
-			this.CityId = domainEntity.Id;
-			this.CityName = domainEntity.CityName;
-			this.RegionId = domainEntity.RegionId;
-			this.CountryId = domainEntity.CountryId;
-
-			return this;
-		}
 	}
 }

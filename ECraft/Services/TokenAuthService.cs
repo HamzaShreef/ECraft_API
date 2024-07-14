@@ -43,7 +43,11 @@ namespace ECraft.Services
 
 		public async Task<AuthResult> CreateAccount(AccountRequest registerRequest)
 		{
-			var newEndUser = new AppUser(registerRequest.FirstName,registerRequest.LastName);
+			var newEndUser = new AppUser()
+			{
+				FirstName = registerRequest.FirstName,
+				LastName = registerRequest.LastName
+			};
 
 			//UserName Validation
 			var usedMail = await _userManager.Users.AnyAsync(u => u.NormalizedEmail == registerRequest.Email.ToUpper());

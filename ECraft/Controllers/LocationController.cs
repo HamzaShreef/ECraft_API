@@ -28,7 +28,7 @@ namespace ECraft.Controllers
 		{
 			LocationCountry countryWithCities = await _db.LCountries.Where(c => c.Id == countryId)
 				.Include(c => c.CountryCities)
-				.Include(c => c.CountryStates)
+				.Include(c => c.CountryRegions)
 				.FirstOrDefaultAsync();
 
 			if (countryWithCities is null)
@@ -36,10 +36,10 @@ namespace ECraft.Controllers
 
 			CountryDto countryDto = new CountryWithCitiesDto()
 			{
-				CountryStates = countryWithCities.CountryStates.ToList().Select(s => new StateDto().GetDto(s)),
+				CountryRegions = countryWithCities.CountryRegions.ToList().Select(s => new StateDto().GetDto(s)),
 				CountryCities = countryWithCities.CountryCities.ToList().Select(c => new CityDto().GetDto(c)),
 				citiesCount=countryWithCities.CountryCities.Count,
-				statesCount=countryWithCities.CountryStates.Count
+				statesCount=countryWithCities.CountryRegions.Count
 			}.GetDto(countryWithCities);
 
 
@@ -89,7 +89,7 @@ namespace ECraft.Controllers
 		{
 			if (ModelState.IsValid)
 			{
-				LocationCountry newCountryRecord = countryDto.GetDomainEntity(out bool successfulMapping, out IdentityError? validationError);
+				LocationCountry newCountryRecord = countryDto.GetDomainEntity(out bool successfulMapping);
 
 				_db.LCountries.Add(newCountryRecord);
 
@@ -134,7 +134,7 @@ namespace ECraft.Controllers
 
 				
 
-				LocationRegion newStateRecord = stateDto.GetDomainEntity(out bool successfulMapping, out IdentityError? validationError);
+				LocationRegion newStateRecord = stateDto.GetDomainEntity(out bool successfulMapping);
 
 				_db.LRegions.Add(newStateRecord);
 
@@ -195,7 +195,7 @@ namespace ECraft.Controllers
 				}
 
 
-				LocationCity newCityRecord = cityDto.GetDomainEntity(out bool successfulMapping, out IdentityError? validationError);
+				LocationCity newCityRecord = cityDto.GetDomainEntity(out bool successfulMapping);
 
 				_db.LCities.Add(newCityRecord);
 

@@ -12,7 +12,7 @@
 
         public DateTime ViewDate { get; set; }
 
-       // public int ViewCount { get; set; } 
+       public int ViewsCount { get; set; } 
 
     }
 }

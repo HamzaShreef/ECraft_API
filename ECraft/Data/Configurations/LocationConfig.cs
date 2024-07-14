@@ -10,12 +10,25 @@ namespace ECraft.Data.Configurations
 		{
 			builder.HasData(new LocationCountry[]
 			{
-				new LocationCountry(){Id=1, CountryName="Egypt",LocalName="مصر",CountryCode="+20"},
-				new LocationCountry(){ Id=2,CountryName="United States",CountryCode="+1"},
+			new LocationCountry()
+			{
+				Id = 1,
+				CountryName = "Egypt",
+				LocalName = "مصر",
+				CountryCode = "+20",
+				TimeZone = "Africa/Cairo"
+			},
+			new LocationCountry()
+			{
+				Id = 2,
+				CountryName = "United States",
+				CountryCode = "+1",
+				TimeZone = "America/New_York"  // You can set this to the most relevant time zone
+            }
 			});
-
 		}
 	}
+
 
 	public class LocationCityConfig : IEntityTypeConfiguration<LocationCity>
 	{

@@ -15,7 +15,7 @@ namespace ECraft.Models
 		[MaxLength(50)]
 		public string? TimeZone { get; set; }  // e.g., "America/New_York"
 
-		public LocationRegion? State { get; set; }
+		public LocationRegion? Region { get; set; }
 
         public int CountryId { get; set; }
 

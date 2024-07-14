@@ -12,6 +12,12 @@ namespace ECraft.Data
 
         public DbSet<CrafterProfile> Crafters { get; set; }
 
+        public DbSet<CrafterReview> CraftersReviews  { get; set; }
+
+        public DbSet<UserInteraction> UserInteractions { get; set; }
+
+        public DbSet<ProfileView> ProfileViews { get; set; }
+
         public DbSet<CraftProject> CraftProjects { get; set; }
 
         public DbSet<LocationCountry> LCountries { get; set; }

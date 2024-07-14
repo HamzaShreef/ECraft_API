@@ -8,16 +8,6 @@ namespace ECraft.Models
 {
 	public class AppUser : IdentityUser<int>
 	{
-        public AppUser(string firstName,string lastName)
-        {
-            FirstName = firstName;
-            LastName = lastName;
-        }
-
-        public AppUser()
-        {
-            
-        }
 
         [MaxLength(20)]
         public string FirstName { get; set; }

@@ -1,9 +1,12 @@
 ﻿using Azure;
+using ECraft.Constants;
 using ECraft.Contracts.Response;
 using ECraft.Domain;
 using ECraft.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.OpenApi.Models;
 using System.Security.Claims;
@@ -83,5 +86,15 @@ namespace ECraft.Extensions
             else
                 throw new Exception("uid claim value is not an integer value");
         }
-    }
+
+
+        public static BadRequestObjectResult ReturnServerDownError<T>(this ControllerBase controller, Exception exception, ILogger<T> logger, string customMessage = "Something went wrong at our backend",LogLevel logLevel=LogLevel.Warning)
+        {
+            logger.Log(logLevel, exception.Message);
+            var errorsList = new ErrorList();
+            errorsList.AddError(GeneralErrorCodes.ServiceDown, customMessage);
+            return controller.BadRequest(errorsList);
+        }
+
+	}
 }

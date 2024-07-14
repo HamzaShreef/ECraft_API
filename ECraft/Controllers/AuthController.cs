@@ -47,25 +47,8 @@ namespace ECraft.Controllers
 			{
 				var authResult = await _authService.GetToken(loginRequest);
 
-
-				if(authResult.Succeeded)
-				{
-					var responseDto = new AuthResponse()
-					{
-						AccessToken = authResult.AccessToken,
-						Name = authResult.Name,
-						Roles = authResult.Roles != null ? authResult.Roles.ToList() : new List<string>(),
-						ImgUrl = authResult.ImgUrl,
-						RefreshToken = authResult.RefreshToken,
-						ExpiryDate=authResult.ExpriryDate
-					};
-
-					return Ok(responseDto);
-				}
-				else
-				{
-					return BadRequest(authResult.Errors);
-				}
+				return getResponseFromAuthResult(authResult);
+				
 			}
 			else
 			{
@@ -82,24 +65,7 @@ namespace ECraft.Controllers
 			{
 				var authResult = await _authService.CreateAccount(registerRequest);
 
-
-				if (authResult.Succeeded)
-				{
-					var responseDto = new AuthResponse()
-					{
-						AccessToken = authResult.AccessToken,
-						Name = authResult.Name,
-						Roles = authResult.Roles != null ? authResult.Roles.ToList() : new List<string>(),
-						ImgUrl = authResult.ImgUrl,
-						RefreshToken = authResult.RefreshToken,
-					};
-
-					return Ok(responseDto);
-				}
-				else
-				{
-					return BadRequest(authResult.Errors);
-				}
+				return getResponseFromAuthResult(authResult);			
 			}
 			else
 			{
@@ -153,12 +119,11 @@ namespace ECraft.Controllers
 
 			//local means ther's no roundtrips to the database or anywhere else.
 			bool localBusinessValidation;
-			profile = persitedInfo.GetDomainEntity(out localBusinessValidation, out IdentityError validationError, profile);
+			profile = persitedInfo.GetDomainEntity(out localBusinessValidation, out ErrorList? validationErrors, profile);
 
 			if (!localBusinessValidation)
 			{
-				errors.AddError(validationError.Code, validationError.Description);
-				return BadRequest(errors);
+				return BadRequest(validationErrors);
 			}
 
 
@@ -183,10 +148,11 @@ namespace ECraft.Controllers
 				Dob = u.Dob,
 				UserId = u.Id,
 				UserName = u.UserName,
-				Name = u.FirstName + " " + u.LastName,
-				isMale=u.MGender,
-				Picture=u.ProfileImg,
-				Email=u.Email ?? u.Id.ToString(),
+				FirstName = u.FirstName,
+				LastName = u.LastName,
+				isMale = u.MGender,
+				Picture = u.ProfileImg,
+				Email = u.Email ?? u.Id.ToString(),
 			}).FirstOrDefaultAsync();
 
 			if (response == null)
@@ -205,30 +171,39 @@ namespace ECraft.Controllers
 			{
 				var authResult = await _authService.RefreshToken(refreshRequest);
 
-
-				if (authResult.Succeeded)
-				{
-					var responseDto = new AuthResponse()
-					{
-						AccessToken = authResult.AccessToken,
-						Name = authResult.Name,
-						Roles = authResult.Roles != null ? authResult.Roles.ToList() : new List<string>(),
-						ImgUrl = authResult.ImgUrl,
-						RefreshToken = authResult.RefreshToken,
-						ExpiryDate = authResult.ExpriryDate,
-						IsCrafter = authResult.IsCrafter,
-					};
-
-					return Ok(responseDto);
-				}
-				else
-				{
-					return BadRequest(authResult.Errors);
-				}
+				return getResponseFromAuthResult(authResult);
 			}
 			else
 			{
 				return BadRequest(ModelState.GetErrorList());
+			}
+		}
+
+
+		//Private Methods
+		private IActionResult getResponseFromAuthResult(AuthResult authResult)
+		{
+			if (authResult is null)
+				throw new ArgumentNullException();
+
+			if (authResult.Succeeded)
+			{
+				var responseDto = new AuthResponse()
+				{
+					AccessToken = authResult.AccessToken,
+					Name = authResult.Name,
+					Roles = authResult.Roles != null ? authResult.Roles.ToList() : new List<string>(),
+					ImgUrl = authResult.ImgUrl,
+					RefreshToken = authResult.RefreshToken,
+					ExpiryDate = authResult.ExpriryDate,
+					IsCrafter = authResult.IsCrafter,
+				};
+
+				return Ok(responseDto);
+			}
+			else
+			{
+				return BadRequest(authResult.Errors);
 			}
 		}
 	}

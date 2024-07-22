@@ -17,10 +17,12 @@ namespace ECraft.Controllers
 	public class LocationController : ControllerBase
 	{
 		private readonly AppDbContext _db;
+		private readonly ILogger<LocationController> _logger;
 
-		public LocationController(AppDbContext db)
+		public LocationController(AppDbContext db, ILogger<LocationController> logger)
 		{
 			_db = db;
+			_logger = logger;
 		}
 
 		[HttpGet("country/{countryId}")]
@@ -36,7 +38,7 @@ namespace ECraft.Controllers
 
 			CountryDto countryDto = new CountryWithCitiesDto()
 			{
-				CountryRegions = countryWithCities.CountryRegions.ToList().Select(s => new StateDto().GetDto(s)),
+				CountryRegions = countryWithCities.CountryRegions.ToList().Select(s => new RegionDto().GetDto(s)),
 				CountryCities = countryWithCities.CountryCities.ToList().Select(c => new CityDto().GetDto(c)),
 				citiesCount=countryWithCities.CountryCities.Count,
 				statesCount=countryWithCities.CountryRegions.Count
@@ -46,24 +48,24 @@ namespace ECraft.Controllers
 			return Ok(countryDto);
 		}
 
-		[HttpGet("state/{RegionId}")]
-		public async Task<IActionResult> GetState(int RegionId)
+		[HttpGet("region/{RegionId}")]
+		public async Task<IActionResult> GetRegion(int RegionId)
 		{
-			LocationRegion stateWithCities = await _db.LRegions.Where(s => s.Id == RegionId)
+			LocationRegion regionWithCities = await _db.LRegions.Where(s => s.Id == RegionId)
 				.Include(s => s.RegionCities)
 				.FirstOrDefaultAsync();
 
-			if (stateWithCities is null)
+			if (regionWithCities is null)
 				return NotFound("Invalid RegionId");
 
-			StateDto stateDto = new StateWithCitiesDto()
+			RegionDto regionDto = new RegionWithCitiesDto()
 			{
-				RegionCities = stateWithCities.RegionCities.ToList().Select(c => new CityDto().GetDto(c)),
-				CitiesCount=stateWithCities.RegionCities.Count
-			}.GetDto(stateWithCities);
+				RegionCities = regionWithCities.RegionCities.ToList().Select(c => new CityDto().GetDto(c)),
+				CitiesCount=regionWithCities.RegionCities.Count
+			}.GetDto(regionWithCities);
 
 
-			return Ok(stateDto);
+			return Ok(regionDto);
 		}
 
 		[HttpGet("country")]
@@ -89,7 +91,7 @@ namespace ECraft.Controllers
 		{
 			if (ModelState.IsValid)
 			{
-				LocationCountry newCountryRecord = countryDto.GetDomainEntity(out bool successfulMapping);
+				LocationCountry newCountryRecord = countryDto.GetDomainEntity();
 
 				_db.LCountries.Add(newCountryRecord);
 
@@ -119,13 +121,13 @@ namespace ECraft.Controllers
 			return Ok("Under Construction");
 		}
 
-		[HttpPost("state")]
+		[HttpPost("region")]
 		[Authorize(Roles = "Admin")]
-		public async Task<IActionResult> AddState([FromBody] StateDto stateDto)
+		public async Task<IActionResult> AddRegion([FromBody] RegionDto regionDto)
 		{
 			if (ModelState.IsValid)
 			{
-				int countryId = stateDto.CountryId;
+				int countryId = regionDto.CountryId;
 
 				bool validCountryId = await _db.LCountries.AnyAsync(c => c.Id == countryId);
 
@@ -134,7 +136,7 @@ namespace ECraft.Controllers
 
 				
 
-				LocationRegion newStateRecord = stateDto.GetDomainEntity(out bool successfulMapping);
+				LocationRegion newStateRecord = regionDto.GetDomainEntity();
 
 				_db.LRegions.Add(newStateRecord);
 
@@ -144,28 +146,19 @@ namespace ECraft.Controllers
 				}
 				catch (Exception ex)
 				{
-					var errors = new ErrorList();
-					errors.AddError(GeneralErrorCodes.ServiceDown,ex.Message);
-					return StatusCode(StatusCodes.Status500InternalServerError, errors);
+					return this.ReturnServerDownError(ex, _logger);
 				}
 
-				stateDto.RegionId = newStateRecord.Id;
-				return Ok(stateDto);
+				regionDto.RegionId = newStateRecord.Id;
+				return Ok(regionDto);
 			}
 			else
 				return BadRequest(ModelState.GetErrorList());
 		}
 
-		[HttpPatch("state")]
+		[HttpPatch("region")]
 		[Authorize(Roles = "Admin")]
-		public async Task<IActionResult> EditState()
-		{
-			return Ok("Under Construction");
-		}
-
-		[HttpDelete("state")]
-		[Authorize(Roles = "Admin")]
-		public async Task<IActionResult> DeleteState()
+		public async Task<IActionResult> EditRegion()
 		{
 			return Ok("Under Construction");
 		}
@@ -195,7 +188,7 @@ namespace ECraft.Controllers
 				}
 
 
-				LocationCity newCityRecord = cityDto.GetDomainEntity(out bool successfulMapping);
+				LocationCity newCityRecord = cityDto.GetDomainEntity();
 
 				_db.LCities.Add(newCityRecord);
 
@@ -205,7 +198,7 @@ namespace ECraft.Controllers
 				}
 				catch (Exception ex)
 				{
-					return StatusCode(StatusCodes.Status500InternalServerError, "Service is down");
+					return this.ReturnServerDownError(ex, _logger);
 				}
 
 				cityDto.CityId = newCityRecord.Id;

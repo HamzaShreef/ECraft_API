@@ -19,6 +19,8 @@ namespace ECraft.Extensions
         {
             services.AddScoped<IAuthService, TokenAuthService>();
 
+            services.AddScoped<IStoredImages,ImageStoringService>();
+
             services.ConfigureSwaggerGen(conf =>
             {
                 conf.AddSecurityDefinition("AuthDefinition", new OpenApiSecurityScheme
@@ -47,6 +49,23 @@ namespace ECraft.Extensions
 
             return services;
         }
+
+        public static IServiceCollection RegisterConfigs(this IServiceCollection appServices,IConfiguration appConfiguration)
+        {
+            //Image Config
+			ImageSettings? jwtSettings = appConfiguration.GetSection("ImageSettings").Get<ImageSettings>();
+			if (jwtSettings == null)
+			{
+				throw new Exception("JwtSettings Config Error");
+			}
+
+			appServices.AddSingleton(jwtSettings);
+
+
+
+
+            return appServices;
+		}
 
 
         public static ErrorList GetErrorList(this ModelStateDictionary modelState)
@@ -87,8 +106,29 @@ namespace ECraft.Extensions
                 throw new Exception("uid claim value is not an integer value");
         }
 
+		public static int GetCrafterProfileId(this ClaimsPrincipal claimsPrincipal)
+		{
+			if (claimsPrincipal == null)
+				throw new ArgumentNullException(nameof(claimsPrincipal));
 
-        public static BadRequestObjectResult ReturnServerDownError<T>(this ControllerBase controller, Exception exception, ILogger<T> logger, string customMessage = "Something went wrong at our backend",LogLevel logLevel=LogLevel.Warning)
+
+			Claim? crafterProfileIdClaim = claimsPrincipal.Claims.FirstOrDefault(c => c.Type == "crafter-profile-id");
+
+			if (crafterProfileIdClaim == null)
+			{
+				throw new Exception("\"crafter-profile-id\" claim is not in the claims principal");
+			}
+
+			bool parsed = int.TryParse(crafterProfileIdClaim.Value, out int profileId);
+			if (parsed)
+			{
+				return profileId;
+			}
+			else
+				throw new Exception("\"crafter-profile-id\" claim value is not an integer value");
+		}
+
+		public static BadRequestObjectResult ReturnServerDownError<T>(this ControllerBase controller, Exception exception, ILogger<T> logger, string customMessage = "Something went wrong at our backend",LogLevel logLevel=LogLevel.Warning)
         {
             logger.Log(logLevel, exception.Message);
             var errorsList = new ErrorList();

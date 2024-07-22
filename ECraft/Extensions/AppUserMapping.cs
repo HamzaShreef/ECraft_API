@@ -1,5 +1,6 @@
 ﻿using ECraft.Constants;
 using ECraft.Contracts.Request;
+using ECraft.Contracts.Response;
 using ECraft.Domain;
 using ECraft.Models;
 using Microsoft.AspNetCore.Identity;
@@ -8,7 +9,7 @@ namespace ECraft
 {
 	public static class AppUserMapping
 	{
-		public static AppUser GetDomainEntity(this EditProfileRequest user, out bool successfulMapping, out ErrorList? validationErrors, AppUser? oldInstance)
+		public static AppUser GetDomainEntity(this EditAccountRequest user, out bool successfulMapping, out ErrorList? validationErrors, AppUser? oldInstance)
 		{
 			successfulMapping = true;
 			validationErrors = null;
@@ -50,7 +51,7 @@ namespace ECraft
 		
 		}	
 
-		public static EditProfileRequest GetDto(this EditProfileRequest user, AppUser domainEntity)
+		public static EditAccountRequest GetDto(this EditAccountRequest user, AppUser domainEntity)
 		{
 			if (domainEntity is null)
 				return null;

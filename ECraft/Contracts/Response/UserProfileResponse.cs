@@ -10,7 +10,7 @@
 
         public string Email { get; set; }
 
-        public bool isMale { get; set; }
+        public bool IsMale { get; set; }
 
         public DateOnly? Dob { get; set; }
 

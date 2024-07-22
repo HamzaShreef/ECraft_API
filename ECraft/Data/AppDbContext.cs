@@ -18,7 +18,7 @@ namespace ECraft.Data
 
         public DbSet<ProfileView> ProfileViews { get; set; }
 
-        public DbSet<CraftProject> CraftProjects { get; set; }
+        public DbSet<CraftAchievement> CraftAchievements { get; set; }
 
         public DbSet<LocationCountry> LCountries { get; set; }
 

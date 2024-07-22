@@ -1,6 +1,6 @@
 ﻿namespace ECraft.Contracts.LocationDto
 {
-	public class StateWithCitiesDto:StateDto
+	public class RegionWithCitiesDto:RegionDto
 	{
         public IEnumerable<CityDto>? RegionCities { get; set; }
 

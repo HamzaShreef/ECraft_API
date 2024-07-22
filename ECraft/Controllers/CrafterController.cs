@@ -5,13 +5,16 @@ using ECraft.Data;
 using ECraft.Domain;
 using ECraft.Extensions;
 using ECraft.Models;
+using ECraft.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Hosting;
 using System.Collections.Immutable;
 using System.Linq.Expressions;
+using System.Reflection.Metadata;
 
 namespace ECraft.Controllers
 {
@@ -22,11 +25,13 @@ namespace ECraft.Controllers
 	{
 		private readonly AppDbContext _db;
 		private readonly ILogger<CrafterController> _logger;
+		private readonly IStoredImages _imgService;
 
-		public CrafterController(AppDbContext db, ILogger<CrafterController> logger)
+		public CrafterController(AppDbContext db, ILogger<CrafterController> logger,IStoredImages imgService)
 		{
 			_db = db;
 			_logger = logger;
+			_imgService = imgService;
 		}
 
 		[HttpPost]
@@ -66,7 +71,10 @@ namespace ECraft.Controllers
 					Craft? craft = await _db.Crafts.FindAsync(crafterInfo.CraftId);
 
 					if (craft is null)
-						return NotFound("Referenced Craft Not Found");
+					{
+						errors.AddError(GeneralErrorCodes.InvalidCraftSelection, "Referenced Craft Not Found");
+						return NotFound(errors);
+					}
 
 
 					if (userRecord.CityId is null)
@@ -100,11 +108,14 @@ namespace ECraft.Controllers
 					craft.CraftersCount++;
 					await _db.SaveChangesAsync(); //Hit 4
 
+					//await _db.Users.Where(u => u.Id == uid)
+					//	.ExecuteUpdateAsync(u => u.SetProperty(usr => usr.IsCrafter, true)
+					//							  .SetProperty(usr => usr.CrafterProfileId, newCrafter.Id));
+
 					userRecord.IsCrafter = true;
 					userRecord.CrafterProfileId = newCrafter.Id;
 					//Hit 5
 					await _db.SaveChangesAsync();
-
 
 					return Ok(crafterInfo);
 				}
@@ -175,16 +186,18 @@ namespace ECraft.Controllers
 			int uid = User.GetUserId();
 
 			return await getProfile(c => c.UserId == uid, ct, true);
+
+
 			//try
 			//{
 
-			//	var profile =  await _db.Database.SqlQueryRaw<object>($"Exec GetCrafterProfile {uid}").FirstOrDefaultAsync(ct);
+			//	var profile = await _db.Database.SqlQueryRaw<PrivateProfileResponse>($"Exec GetCrafterProfile {uid}").FirstOrDefaultAsync(ct);
 			//	if (profile is null)
 			//		return NotFound();
 			//	else
 			//		return Ok(profile);
 			//}
-			//catch(Exception ex)
+			//catch (Exception ex)
 			//{
 			//	return this.ReturnServerDownError(ex, _logger);
 			//}
@@ -222,7 +235,7 @@ namespace ECraft.Controllers
 				var existingReview = await _db.CraftersReviews
 					.FirstOrDefaultAsync(crv => crv.ReviewerId == uid 
 										&& crv.ProfileId == crafterReview.ProfileId
-										&& crv.ProjectId == crafterReview.ProjectId);
+										&& crv.AchievementId == null);
 
 				if (existingReview is null)
 				{
@@ -231,7 +244,7 @@ namespace ECraft.Controllers
 					{
 						ReviewerId = uid,
 						ProfileId = crafterReview.ProfileId,
-						ProjectId = crafterReview.ProjectId,
+						AchievementId = null,
 						StarCount = crafterReview.StarCount,
 						Comment = crafterReview.Comment,
 						ReviewDate = DateTime.UtcNow
@@ -239,8 +252,7 @@ namespace ECraft.Controllers
 
 					_db.CraftersReviews.Add(newReview);
 
-					if (crafterReview.ProjectId is null)
-						await incrementReviewsCount(crafterReview.ProfileId);
+					await incrementReviewsCount(crafterReview.ProfileId);
 				}
 				else
 				{
@@ -251,7 +263,7 @@ namespace ECraft.Controllers
 
 				await _db.SaveChangesAsync(ct);
 
-				return Ok();
+				return Ok(crafterReview);
 			}
 			catch(Exception ex)
 			{
@@ -281,7 +293,7 @@ namespace ECraft.Controllers
 				_db.CraftersReviews.Remove(crafterReview);
 				await _db.SaveChangesAsync(ct);
 
-				if (crafterReview.ProjectId is null)
+				if (crafterReview.AchievementId is null)
 					await incrementReviewsCount(crafterReview.ProfileId ?? 0, increment: false);
 
 				return Ok();
@@ -298,7 +310,7 @@ namespace ECraft.Controllers
 		[Authorize]
 		[ProducesResponseType(StatusCodes.Status200OK)]
 		[ProducesResponseType(StatusCodes.Status404NotFound)]
-		public async Task<IActionResult> AddLike([FromQuery] int profileId, CancellationToken ct)
+		public async Task<IActionResult> AddLike([FromQuery] int profileId, [FromQuery] int interactionType, CancellationToken ct)
 		{
 			int uid = User.GetUserId();
 
@@ -311,14 +323,15 @@ namespace ECraft.Controllers
 				UserInteraction? userInteraction = await _db.UserInteractions
 								.FirstOrDefaultAsync(interaction => interaction.InteractorId == uid
 													  && interaction.ProfileId == profileId
-													  && interaction.ProjectId == null
+													  && interaction.AchievementId == null
 													  && interaction.ImgId == null
 													  , ct);
 
 
 				if (userInteraction is not null)
 				{
-					return BadRequest();
+					userInteraction.InteractionType = Math.Min(interactionType, 5);
+					userInteraction.IDate = DateTime.UtcNow;
 				}
 				else
 				{
@@ -327,14 +340,16 @@ namespace ECraft.Controllers
 						InteractorId = uid,
 						ProfileId = profileId,
 						IDate = DateTime.UtcNow,
+						InteractionType = Math.Min(interactionType, 5)
 					};
 
 					_db.UserInteractions.Add(newInteraction);
-					await _db.SaveChangesAsync(ct);
 
 					//Incrementing a counter
 					int rowsAffected = await incrementLikesCount(profileId);
 				}
+
+				await _db.SaveChangesAsync(ct);
 
 				return Ok();
 			}
@@ -359,7 +374,7 @@ namespace ECraft.Controllers
 				UserInteraction? userInteraction = await _db.UserInteractions
 								.FirstOrDefaultAsync(interaction => interaction.InteractorId == uid
 													  && interaction.ProfileId == profileId
-													  && interaction.ProjectId == null
+													  && interaction.AchievementId == null
 													  && interaction.ImgId == null
 													  , ct);
 
@@ -397,12 +412,6 @@ namespace ECraft.Controllers
 			{
 				int uid = User.GetUserId();
 
-				//CrafterProfile? profile = await _db.Crafters.Where(predicate)
-				//	.Include(c => c.UserRecord)
-				//	.Include(c => c.Craft).AsNoTracking()
-				//	.FirstOrDefaultAsync(ct);
-
-
 				var crafterProfile = await _db.Crafters.Where(predicate)
 					.Select(c => new
 					{
@@ -413,8 +422,8 @@ namespace ECraft.Controllers
 							FirstName = c.UserRecord.FirstName,
 							LastName = c.UserRecord.LastName,
 							UserName = c.UserRecord.UserName,
-							Picture = c.UserRecord.ProfileImg,
-							isMale = c.UserRecord.MGender
+							Picture = c.UserRecord.ProfileImg == null ? null : _imgService.GetImage(c.UserRecord.ProfileImg,ImgType.ProfileImage).Result.FullPath, 
+							IsMale = c.UserRecord.MGender
 						},
 						CrafterCraft = c.Craft,
 						CrafterCity = c.UserRecord.City,
@@ -422,79 +431,25 @@ namespace ECraft.Controllers
 						CrafterRegion = c.UserRecord.City != null ? c.UserRecord.City.Region : null
 					}).FirstOrDefaultAsync(ct);
 
-                if (crafterProfile is null)
-                {
-					return NotFound();
-                }
 
-                CrafterProfile? profile = crafterProfile.Profile;
+                CrafterProfile? profile = crafterProfile?.Profile;
 
 
-				if (profile is null)
+				if (crafterProfile is null || profile is null)
 				{
 					return NotFound();
 				}
 
 				PublicProfileResponse response = new PublicProfileResponse();
-				response = response.GetResponseDto(profile,crafterProfile.CrafterCraft,crafterProfile.UserProfile);
-
-
-
-				////Fetching their Location info
-				//var crafterCityInfo = await _db.LCities.Where(c => c.Id == profile.UserRecord.CityId)
-				//	.Include(city => city.Country)
-				//	.Include(city => city.Region)
-				//	.FirstOrDefaultAsync(ct);
-
-				var crafterCityInfo = crafterProfile.CrafterCity;
-				var crafterCountryInfo = crafterProfile.CrafterCountry;
-				var crafterRegionInfo = crafterProfile.CrafterRegion;
-
-				if (crafterCityInfo is not null)
-				{
-					response.CityId = crafterCityInfo.Id;
-					response.CityName = crafterCityInfo.LocalName ?? crafterCityInfo.CityName;
-				}
-
-				if (crafterCountryInfo is not null)
-				{
-					response.CountryId = crafterCountryInfo.Id;
-					response.CountryName = crafterCountryInfo.LocalName ?? crafterCountryInfo.CountryName;
-				}
+				response = response.GetResponseDto(profile, crafterProfile.CrafterCraft, crafterProfile.UserProfile, crafterProfile.CrafterCity, crafterProfile.CrafterCountry, crafterProfile.CrafterRegion);
 
 				
-				if (crafterRegionInfo is not null)
-				{
-					response.RegionId = crafterRegionInfo.Id;
-					response.RegionName = crafterRegionInfo.LocalName ?? crafterRegionInfo.RegionName;
-				}
+
+
 				//If it's not the requester profile
 				if (!includePrivate)
 				{
-					//var prevView = await _db.ProfileViews
-					//	.FirstOrDefaultAsync(pv => pv.ProfileId == profile.Id && pv.ViewerId == uid);
-
-					//if (prevView != null)
-					//{
-					//	//Viewing Logic and auditing
-					//	prevView.ViewsCount += 1;
-					//	prevView.ViewDate = DateTime.UtcNow;
-					//}
-					//else
-					//{
-					//	var profileView = new ProfileView()
-					//	{
-					//		ViewDate = DateTime.UtcNow,
-					//		ViewerId = uid,
-					//		ProfileId = profile.Id,
-					//	};
-					//	_db.ProfileViews.Add(profileView);
-					//	profile.ViewsCount += 1;
-					//}
-
-					//await _db.SaveChangesAsync();
-
-
+				
 					var spRowsAffected = await _db.Database
 						.ExecuteSqlRawAsync($"Exec ViewCrafterProfile @ProfileId={profile.Id},@ViewerId={uid};", ct);
 

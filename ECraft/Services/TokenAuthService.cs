@@ -301,6 +301,13 @@ namespace ECraft.Services
 			};
 
 			var userRoles = await _userManager.GetRolesAsync(user);
+
+			if (user.CrafterProfileId != null)
+			{
+				Claim crafterProfileIdClaim = new Claim("crafter-profile-id", user.CrafterProfileId.Value.ToString());
+				tokenClaims = tokenClaims.Append(crafterProfileIdClaim);
+			}
+
 			var roleClaims = userRoles.Select(roleName => new Claim("role", roleName));
 
 			tokenClaims = tokenClaims.Union(roleClaims);

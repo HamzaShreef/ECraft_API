@@ -15,11 +15,11 @@ namespace ECraft.Models
 
         public byte StarCount { get; set; } = 0;
 
-        public int? ProjectId { get; set; }
+        public long? AchievementId { get; set; }
 
         public int LikesCount { get; set; } = 0;
 
-        public CraftProject? Project { get; set; }
+        public CraftAchievement? Achievement { get; set; }
 
         public DateTime ReviewDate { get; set; }
     }

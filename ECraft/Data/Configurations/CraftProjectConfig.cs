@@ -4,11 +4,13 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace ECraft.Data.Configurations
 {
-	public class CraftProjectConfig : IEntityTypeConfiguration<CraftProject>
+	public class CraftAchievementConfig : IEntityTypeConfiguration<CraftAchievement>
 	{
-		public void Configure(EntityTypeBuilder<CraftProject> builder)
+		public void Configure(EntityTypeBuilder<CraftAchievement> builder)
 		{
-			builder.HasMany(p => p.Tags).WithOne(cp => cp.Project).HasForeignKey(cp=>cp.ProjectId);
+			builder.HasMany(p => p.Tags).WithOne(cp => cp.Achievement).HasForeignKey(cp => cp.AchievementId);
+
+			builder.HasMany(ca => ca.Images).WithOne(img => img.Achievement).HasForeignKey(img => img.AchievementId);
 		}
 	}
 }

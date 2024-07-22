@@ -15,10 +15,10 @@ namespace ECraft.Models
         [MaxLength(20)]
         public string ContactPhone { get; set; }
 
-        [MaxLength(StringPropertyLengths.CrafterTitleMax)]
+        [MaxLength(SizeConstants.CrafterTitleMax)]
         public string Title { get; set; }
 
-        [MaxLength(StringPropertyLengths.AboutCrafterMax)]
+        [MaxLength(SizeConstants.AboutCrafterMax)]
         public string? About { get; set; }
 
         [MaxLength(250)]
@@ -42,14 +42,14 @@ namespace ECraft.Models
 
         public int SkillsCount { get; set; }
 
-        public int ProjectsCount { get; set; }
+        public int AchievementsCount { get; set; }
 
         //For Precise Location
 		public double? Latitude { get; set; }
 
 		public double? Longitude { get; set; }
 
-		public ICollection<CraftProject> PortofolioProjects { get; set; }
+		public ICollection<CraftAchievement> PortofolioAchievements { get; set; }
 
         public ICollection<CrafterSkill> Skills { get; set; }
 

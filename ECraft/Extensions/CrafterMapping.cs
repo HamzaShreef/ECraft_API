@@ -47,7 +47,7 @@ namespace ECraft.Extensions
 			return persistedProfile;
 		}
 
-		public static PublicProfileResponse GetResponseDto(this PublicProfileResponse profileInfo, CrafterProfile domainEntity,Craft craft=null,UserProfileResponse userProfile=null)
+		public static PublicProfileResponse GetResponseDto(this PublicProfileResponse profileInfo, CrafterProfile domainEntity, Craft? craft = null, UserProfileResponse? userProfile = null, LocationCity? crafterCity = null, LocationCountry? crafterCountry = null, LocationRegion? crafterRegion = null)
 		{
 			if (profileInfo == null)
 			{
@@ -58,7 +58,7 @@ namespace ECraft.Extensions
 
 			profileInfo.BasicInfo = profileInfo.BasicInfo.GetDto(domainEntity);
 
-			profileInfo.ProjectsCount = domainEntity.ProjectsCount;
+			profileInfo.AchievementsCount = domainEntity.AchievementsCount;
 			profileInfo.ProfileId = domainEntity.Id;
 			profileInfo.SkillsCount = domainEntity.SkillsCount;
 			profileInfo.AverageRating = domainEntity.AverageRating;
@@ -66,19 +66,40 @@ namespace ECraft.Extensions
 			profileInfo.ReviewsCount = domainEntity.ReviewsCount;
 			profileInfo.LikesCount = domainEntity.LikesCount;
 
-			if(craft is not null)
+			//Craft Info
+			if (craft is not null)
 			{
 				profileInfo.CraftTitle = craft.Title;
 				profileInfo.CraftIcon = craft.Icon;
 			}
 
-			if(userProfile is not null)
+			//original user account info
+			if (userProfile is not null)
 			{
 				profileInfo.FirstName = userProfile.FirstName;
 				profileInfo.LastName = userProfile.LastName;
 				profileInfo.UserName = userProfile.UserName;
 				profileInfo.ProfileImg = userProfile.Picture;
-				profileInfo.IsMale = userProfile.isMale;
+				profileInfo.IsMale = userProfile.IsMale;
+			}
+
+			if (crafterCity is not null)
+			{
+				profileInfo.CityId = crafterCity.Id;
+				profileInfo.CityName = crafterCity.LocalName ?? crafterCity.CityName;
+			}
+
+			if (crafterCountry is not null)
+			{
+				profileInfo.CountryId = crafterCountry.Id;
+				profileInfo.CountryName = crafterCountry.LocalName ?? crafterCountry.CountryName;
+			}
+
+
+			if (crafterRegion is not null)
+			{
+				profileInfo.RegionId = crafterRegion.Id;
+				profileInfo.RegionName = crafterRegion.LocalName ?? crafterRegion.RegionName;
 			}
 
 

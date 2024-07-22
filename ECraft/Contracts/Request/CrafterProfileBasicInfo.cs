@@ -1,8 +1,10 @@
 ﻿using ECraft.Constants;
+using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
 
 namespace ECraft.Contracts.Request
 {
+    [Owned]
 	public class CrafterProfileBasicInfo
 	{
         public int CraftId { get; set; }
@@ -14,11 +16,11 @@ namespace ECraft.Contracts.Request
 
 
         [MinLength(20)]
-        [MaxLength(StringPropertyLengths.AboutCrafterMax)]
+        [MaxLength(SizeConstants.AboutCrafterMax)]
         public string? About { get; set; }
 
         [MinLength(3)]
-        [MaxLength(StringPropertyLengths.CrafterTitleMax)]
+        [MaxLength(SizeConstants.CrafterTitleMax)]
         public string Title { get; set; }
 
 		[MinLength(3)]

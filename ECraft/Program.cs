@@ -75,6 +75,8 @@ builder.Services.AddDataProtection();
 
 builder.Services.RegisterServices();
 
+builder.Services.RegisterConfigs(builder.Configuration);
+
 var app = builder.Build();
 
 
@@ -93,5 +95,7 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+
+app.UseStaticFiles();
 
 app.Run();

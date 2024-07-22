@@ -16,5 +16,9 @@ namespace ECraft.Contracts.LocationDto
 		[MinLength(2)]
 		public string CountryCode { get; set; }
 
-	}
+		[MinLength(2)]
+		[MaxLength(50)]
+        public string? LocalName { get; set; }
+
+    }
 }

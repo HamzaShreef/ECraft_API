@@ -8,7 +8,7 @@ namespace ECraft.Data.Configurations
 	{
 		public void Configure(EntityTypeBuilder<CommunityTag> builder)
 		{
-			builder.HasMany(ct => ct.CraftProjects).WithOne(pt => pt.Tag).HasForeignKey(pt => pt.TagId);
+			builder.HasMany(ct => ct.CraftAchievements).WithOne(pt => pt.Tag).HasForeignKey(pt => pt.TagId);
 		}
 	}
 }

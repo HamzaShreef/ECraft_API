@@ -7,27 +7,20 @@ namespace ECraft.Extensions
 	public static class LocationMapping
 	{
 		//City Mapping
-		public static LocationCity GetDomainEntity(this CityDto cityDto,out bool successfulMapping, LocationCity? oldInstance = null)
+		public static LocationCity GetDomainEntity(this CityDto cityDto, LocationCity? oldInstance = null)
 		{
-			successfulMapping = true;
-
 			if (oldInstance is null)
 			{
-				return new LocationCity()
-				{
-					CityName = cityDto.CityName,
-					CountryId = cityDto.CountryId,
-					RegionId = cityDto.RegionId,
-				};
-			}
-			else
-			{
-				oldInstance.CityName = cityDto.CityName;
-				oldInstance.RegionId = cityDto.RegionId;
-				oldInstance.CountryId = cityDto.CountryId;
-				return oldInstance;
+				oldInstance = new LocationCity();
 			}
 
+			oldInstance.CityName = cityDto.CityName;
+			oldInstance.LocalName = cityDto.LocalName;
+			oldInstance.RegionId = cityDto.RegionId;
+			oldInstance.CountryId = cityDto.CountryId;
+
+
+			return oldInstance;
 		}
 
 		public static CityDto GetDto(this CityDto cityDto, LocationCity domainEntity)
@@ -37,6 +30,7 @@ namespace ECraft.Extensions
 
 			cityDto.CityId = domainEntity.Id;
 			cityDto.CityName = domainEntity.CityName;
+			cityDto.LocalName = domainEntity.LocalName;
 			cityDto.RegionId = domainEntity.RegionId;
 			cityDto.CountryId = domainEntity.CountryId;
 
@@ -44,19 +38,17 @@ namespace ECraft.Extensions
 		}
 
 		//Country Mapping
-		public static LocationCountry GetDomainEntity(this CountryDto countryDto, out bool successfulMapping, LocationCountry? oldInstance = null)
+		public static LocationCountry GetDomainEntity(this CountryDto countryDto, LocationCountry? oldInstance = null)
 		{
-			successfulMapping = true;
 
 			if (oldInstance is null)
-				return new LocationCountry()
-				{
-					CountryName = countryDto.CountryName,
-					CountryCode = countryDto.CountryCode,
-				};
+			{
+				oldInstance=new LocationCountry();
+			}
 
 			oldInstance.CountryName = countryDto.CountryName;
 			oldInstance.CountryCode = countryDto.CountryCode;
+			oldInstance.LocalName = countryDto.LocalName;
 			return oldInstance;
 		}
 
@@ -68,35 +60,34 @@ namespace ECraft.Extensions
 			countryDto.CountryId = domainEntity.Id;
 			countryDto.CountryCode = domainEntity.CountryCode;
 			countryDto.CountryName = domainEntity.CountryName;
+			countryDto.LocalName = domainEntity.LocalName;
 
 			return countryDto;
 		}
 
 		//State Or Region Mapping
-		public static LocationRegion GetDomainEntity(this StateDto regionDto,out bool successfulMapping, LocationRegion? oldInstance = null)
+		public static LocationRegion GetDomainEntity(this RegionDto regionDto, LocationRegion? oldInstance = null)
 		{
-			successfulMapping = true;
-
 			if (oldInstance is null)
-				return new LocationRegion()
-				{
-					CountryId = regionDto.CountryId,
-					RegionName = regionDto.RegionName,
-				};
+			{
+				oldInstance = new LocationRegion();
+			}
 
 			oldInstance.CountryId = regionDto.CountryId;
 			oldInstance.RegionName = regionDto.RegionName;
+			oldInstance.LocalName = regionDto.LocalName;
 
 			return oldInstance;
 		}
 
-		public static StateDto GetDto(this StateDto regionDto,LocationRegion domainEntity)
+		public static RegionDto GetDto(this RegionDto regionDto,LocationRegion domainEntity)
 		{
 			if (domainEntity is null)
 				return null;
 
 			regionDto.RegionId = domainEntity.Id;
 			regionDto.RegionName = domainEntity.RegionName;
+			regionDto.LocalName = domainEntity.LocalName;
 			regionDto.CountryId = domainEntity.CountryId;
 
 			return regionDto;

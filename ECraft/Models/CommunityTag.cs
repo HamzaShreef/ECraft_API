@@ -11,7 +11,7 @@ namespace ECraft.Models
 
         public DateTime CreationDate { get; set; }
 
-        public ICollection<ProjectTag>? CraftProjects { get; set; }
+        public ICollection<AchievementTag>? CraftAchievements { get; set; }
 
     }
 }

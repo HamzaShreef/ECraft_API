@@ -12,7 +12,11 @@ namespace ECraft.Contracts.LocationDto
 		[MaxLength(100)]
 		public string CityName { get; set; }
 
-		public int CountryId { get; set; }
+		[MinLength(2)]
+		[MaxLength(100)]
+		public string? LocalName { get; set; }
+
+        public int CountryId { get; set; }
 
 		public int? RegionId { get; set; }
 

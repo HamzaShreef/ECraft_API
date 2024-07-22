@@ -10,13 +10,13 @@
 
 		public DateTime IDate { get; set; }
 
-		public int? ProjectId { get; set; }
+		public long? AchievementId { get; set; }
 
-		public CraftProject? Project { get; set; }
+		public CraftAchievement? Achievement { get; set; }
 
-        public int? ImgId { get; set; }
+        public long? ImgId { get; set; }
 
-		public ProjectImage? Img { get; set; }
+		public AchievementImage? Img { get; set; }
 
 		public int? ProfileId { get; set; }
 

@@ -29,14 +29,16 @@ namespace ECraft.Controllers
 	public class AuthController : ControllerBase
 	{
 		private readonly IAuthService _authService;
+		private readonly IStoredImages _imgService;
 		private readonly AppDbContext _db;
 		ILogger<AuthController> _logger;
 
-		public AuthController(IAuthService authService,AppDbContext db,ILogger<AuthController> logger)
+		public AuthController(IAuthService authService,AppDbContext db,ILogger<AuthController> logger,IStoredImages imgService)
 		{
 			_authService = authService;
 			_db = db;
 			_logger = logger;
+			_imgService = imgService;
 		}
 
 		
@@ -77,7 +79,7 @@ namespace ECraft.Controllers
 
 		[HttpPatch("profile")]
 		[Authorize]
-		public async Task<IActionResult> EditProfile([FromBody]JsonPatchDocument<EditProfileRequest> patchDoc)
+		public async Task<IActionResult> EditProfile([FromBody]JsonPatchDocument<EditAccountRequest> patchDoc)
 		{
 			try
 			{
@@ -88,7 +90,7 @@ namespace ECraft.Controllers
 					return NotFound();
 
 
-				EditProfileRequest persitedInfo = new EditProfileRequest();
+				EditAccountRequest persitedInfo = new EditAccountRequest();
 				persitedInfo = persitedInfo.GetDto(profile);
 
 
@@ -163,7 +165,85 @@ namespace ECraft.Controllers
 
 		}
 
-		
+		[HttpPut("profile/img")]
+		[Authorize]
+		[Consumes("multipart/form-data")]
+		[ProducesResponseType(StatusCodes.Status200OK)]
+		[ProducesResponseType(StatusCodes.Status400BadRequest)]
+		public async Task<IActionResult> UploadProfileImage([FromForm] UploadProfileImageDto profileImgDto)
+		{
+			var profileImg = profileImgDto.ImgFile;
+
+			try
+			{
+				int uid = User.GetUserId();
+				AppUser user = await _db.Users.FirstAsync(u => u.Id == uid);
+
+				if(user.ProfileImg !=null)
+				{
+					var deletingResponse = await _imgService.RemoveImage(user.ProfileImg, ImgType.ProfileImage);
+					if (!deletingResponse.Succeeded)
+						return BadRequest(deletingResponse.Errors);
+				}
+
+				string fileName = $"USR-{uid}-{DateTime.UtcNow.ToString("yyyyMMddHHmmss")}";
+
+				var validationResult = await _imgService.ValidateImage(profileImg);
+				if (!validationResult.Succeeded)
+				{
+					return BadRequest(validationResult.Errors);
+				}
+
+				var storingResult = await _imgService.StoreImage(profileImg, ImgType.ProfileImage, fileName);
+				user.ProfileImg = storingResult.ImgName;
+				await _db.SaveChangesAsync();
+				if (user == null)
+				{
+					return BadRequest();
+				}
+
+				return Ok(new { ImgUrl = storingResult.FullPath });
+
+			}
+			catch (Exception ex)
+			{
+				return this.ReturnServerDownError(ex, _logger);
+			}
+		}
+
+		[HttpDelete("profile/img")]
+		[Authorize]
+		[ProducesResponseType(StatusCodes.Status200OK)]
+		[ProducesResponseType(StatusCodes.Status400BadRequest)]
+		public async Task<IActionResult> DeleteProfileImage()
+		{
+			try
+			{
+				int uid = User.GetUserId();
+				AppUser user = await _db.Users.FirstAsync(u => u.Id == uid);
+
+				if (user.ProfileImg != null)
+				{
+					var deletingResponse = await _imgService.RemoveImage(user.ProfileImg, ImgType.ProfileImage);
+					if (!deletingResponse.Succeeded)
+						return BadRequest(deletingResponse.Errors);
+
+					user.ProfileImg = null;
+					await _db.SaveChangesAsync();
+					return Ok();
+				}
+				else
+				{
+					return NotFound();
+				}
+
+			}
+			catch(Exception ex)
+			{
+				return this.ReturnServerDownError(ex, _logger);
+			}
+		}
+
 		[HttpGet("profile")]
 		[Authorize]
 		public async Task<IActionResult> Profile()
@@ -177,7 +257,7 @@ namespace ECraft.Controllers
 				UserName = u.UserName,
 				FirstName = u.FirstName,
 				LastName = u.LastName,
-				isMale = u.MGender,
+				IsMale = u.MGender,
 				Picture = u.ProfileImg,
 				Email = u.Email ?? u.Id.ToString(),
 			}).FirstOrDefaultAsync();

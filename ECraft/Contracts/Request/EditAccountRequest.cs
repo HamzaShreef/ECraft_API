@@ -6,7 +6,7 @@ using System.Security.Cryptography.Xml;
 
 namespace ECraft.Contracts.Request
 {
-	public class EditProfileRequest
+	public class EditAccountRequest
 	{
 		[MaxLength(20)]
 		[MinLength(3)]

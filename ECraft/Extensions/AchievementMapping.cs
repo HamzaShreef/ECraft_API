@@ -78,6 +78,22 @@ namespace ECraft.Extensions
 
 			return result;
 		}
-	
+
+		public static List<AchievementResponse> GetResponseList(this List<CraftAchievement>? achievementsList, IStoredImages imgService)
+		{
+			if (achievementsList == null)
+				return null;
+
+			var resList = achievementsList.Select(ach => new AchievementResponse()
+			{
+				MutableInfo = new CrafterAchievementDto().GetDomainDto(ach),
+				PublishDate = ach.PublishDate,
+				AchievementId = ach.Id,
+				IntroImgUrl = ach.IntroImg == null ? null : imgService.GetImage(ach.IntroImg, ImgType.HandiworkImage).Result.FullPath,
+				ImagesList = ach.Images == null ? null : ach.Images.GetList(imgService, ImgType.HandiworkImage)
+			});
+
+			return resList.ToList();
+		}
 	}
 }

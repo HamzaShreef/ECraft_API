@@ -101,23 +101,17 @@ namespace ECraft.Controllers
 					requestFilter.PageNumber = Math.Max(requestFilter.PageNumber, 1);
 					requestFilter.PageSize = Math.Min(requestFilter.PageSize, SizeConstants.GenericPageSize);
 
-					var queryResult = await query.Include(a => a.Images)
-						.OrderByDescending(a => a.LikesCount)
-						.ThenByDescending(a => a.ViewCount)
-						.Skip(requestFilter.PageSize * (requestFilter.PageNumber - 1))
-						.Take(requestFilter.PageSize)
-						.Select(ach => new AchievementResponse()
-						{
-							MutableInfo = new CrafterAchievementDto().GetDomainDto(ach),
-							PublishDate = ach.PublishDate,
-							AchievementId = ach.Id,
-							IntroImgUrl = ach.IntroImg == null ? null : _imgService.GetImage(ach.IntroImg, ImgType.HandiworkImage).Result.FullPath,
-							ImagesList = ach.Images == null ? null : ach.Images.GetList(_imgService, ImgType.HandiworkImage)
+					var queryResult = await query
+									  .Include(a => a.Images)
+									  .OrderByDescending(a => a.LikesCount)
+									  .ThenByDescending(a => a.ViewCount)
+									  .Skip(requestFilter.PageSize * (requestFilter.PageNumber - 1))
+									  .Take(requestFilter.PageSize)
+									  .ToListAsync(ct);
 
-						})
-						.ToListAsync(ct);
+					List<AchievementResponse> handiworkList = queryResult.GetResponseList(_imgService);
 
-					PagedResponse<AchievementResponse> response = new PagedResponse<AchievementResponse>(queryResult)
+					PagedResponse<AchievementResponse> response = new PagedResponse<AchievementResponse>(handiworkList)
 					{
 						PageSize = requestFilter.PageSize,
 						PageNumber = requestFilter.PageNumber
